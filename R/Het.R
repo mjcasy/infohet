@@ -1,10 +1,17 @@
+#' Calculate Information in Heterogeneity
+#'
+#' @param CountsMatrix dgCMatrix
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_Het <- function(CountsMatrix) {
-  require(Matrix)
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
 
-  CountsMatrix <- t(CountsMatrix)
+  CountsMatrix <- Matrix::t(CountsMatrix)
 
   Indices <- length(CountsMatrix@p)-1
   Het <- vector("numeric", length(Indices))
@@ -23,8 +30,16 @@ get_Het <- function(CountsMatrix) {
   Het
 }
 
-adjust_Het <- function(Het, CountsMatrix) {
-  require(Matrix)
+#' Subtract information due to count sparsity
+#'
+#' @param Het vector
+#' @param CountsMatrix dgCMatrix
+#'
+#' @return
+#' @export
+#'
+#' @examples
+subtract_HetSparse <- function(Het, CountsMatrix) {
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
@@ -37,15 +52,24 @@ adjust_Het <- function(Het, CountsMatrix) {
   HetAdj
 }
 
+#' Calaculate Information in Model
+#'
+#' @param CountsMatrix dgCMatrix
+#' @param groups factor
+#' @param GroupedCounts dgCMatrix
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_HetMacro <- function(CountsMatrix, groups, GroupedCounts) {
-  require(Matrix)
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
 
   Ng <- as.vector(table(groups))
 
-  GroupedCounts <- t(GroupedCounts)
+  GroupedCounts <- Matrix::t(GroupedCounts)
 
   Indices <- length(GroupedCounts@p)-1
   Het <- vector("numeric", length(Indices))
@@ -66,8 +90,18 @@ get_HetMacro <- function(CountsMatrix, groups, GroupedCounts) {
   Het
 }
 
-get_HetMicro <- function(CountsMatrix, groups, GroupedCounts) {
-  require(Matrix)
+#' Calaculate Information not in Model
+#'
+#' @param CountsMatrix dgCMatrix
+#' @param groups factor
+#' @param GroupedCounts dgCMatrix
+#' @param reduced logical
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_HetMicro <- function(CountsMatrix, groups, GroupedCounts, reduced = T) {
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
@@ -92,9 +126,13 @@ get_HetMicro <- function(CountsMatrix, groups, GroupedCounts) {
 
   Average <- Matrix::rowSums(FreqMatrix * HetMicro)
 
-  HetMicro <- cbind(HetMicro, Average)
-
-  rownames(HetMicro) <- rownames(CountsMatrix)
+  if(reduced == T){
+    HetMicro <- Average
+    names(HetMicro) <- rownames(CountsMatrix)
+  } else if(reduced == F){
+    HetMicro <- cbind(HetMicro, Average)
+    rownames(HetMicro) <- rownames(CountsMatrix)
+  }
 
   HetMicro
 }

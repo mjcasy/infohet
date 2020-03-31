@@ -1,5 +1,17 @@
+
+#' Group counts by cell identity
+#'
+#' For a given grouping of cells, produces a sparse matrix where each column is the total counts in each group.
+#'
+#' @param CountsMatrix dgCMatrix
+#' @param groups factor
+#'
+#' @return dgCMatrix
+#' @export
+#'
+#' @examples
+#'
 group_Counts <- function(CountsMatrix, groups) {
-  require(Matrix)
 
   types <- levels(groups)
   I <- length(types)
