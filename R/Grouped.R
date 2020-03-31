@@ -1,5 +1,5 @@
 
-#' Group counts by cell identity
+#' Sum counts by group
 #'
 #' For a given grouping of cells, produces a sparse matrix where each column is the total counts in each group.
 #'
