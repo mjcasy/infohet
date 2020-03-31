@@ -77,3 +77,54 @@ OG
 ```
 
 
+```{r}
+library(patchwork)
+Grouping <- Identity
+  
+GroupedCounts <- group_Counts(CountsMatrix, Grouping)
+HetMacro <- get_HetMacro(CountsMatrix, Grouping, GroupedCounts)
+HetMicro <- get_HetMicro(CountsMatrix, Grouping, GroupedCounts, reduced = F)
+HetMicroAdj <- subtract_HetSparse(HetMicro[,"Average"], CountsMatrix)
+
+HetDataFrame <- cbind(HetDataFrame, HetMacro, HetMicro[,"Average"], HetMicroAdj)
+colnames(HetDataFrame)[ncol(HetDataFrame)-1] <- c("HetMicro")
+
+
+NumPermutes <- 1
+HetMacroPermutedMat <- matrix(NA, nrow = nrow(CountsMatrix), ncol = NumPermutes)
+HetMicroPermutedMat <- matrix(NA, nrow = nrow(CountsMatrix), ncol = NumPermutes)
+HetMicroPermutedAdjMat <- matrix(NA, nrow = nrow(CountsMatrix), ncol = NumPermutes)
+
+for(i in 1:NumPermutes){
+  Grouping <- Grouping[sample(ncol(CountsMatrix), replace = F)]
+    
+  GroupedCounts <- group_Counts(CountsMatrix, Grouping)
+  HetMacroPermutedMat[,i] <- get_HetMacro(CountsMatrix, Grouping, GroupedCounts)
+  MicroTemp <- get_HetMicro(CountsMatrix, Grouping, GroupedCounts, reduced = F)
+  HetMicroPermutedMat[,i] <- MicroTemp[,"Average"]
+  HetMicroPermutedAdjMat[,i] <- subtract_HetSparse(HetMicroPermutedMat[,i], CountsMatrix)
+}
+
+HetMacroPermuted <- rowMeans(HetMacroPermutedMat)
+HetMicroPermuted <- rowMeans(HetMicroPermutedMat)
+HetMicroPermutedAdj <- rowMeans(HetMicroPermutedAdjMat)
+
+HetDataFrame <- HetDataFrame[,1:10]
+HetDataFrame <- cbind(HetDataFrame, HetMacroPermuted, HetMicroPermuted, HetMicroPermutedAdj)
+colnames(HetDataFrame)[ncol(HetDataFrame)-1] <- "HetMicroPermuted"
+
+Ylims <- c(min(HetMicroAdj), log(ncol(CountsMatrix)))
+
+g1 <- OG + ylim(Ylims)
+g2 <- ggplot(HetDataFrame, aes(x = log10_Total_nUMI, y = HetMicroAdj)) + geom_point() + ylim(Ylims) + xlab("") + ylab("") +
+  ggtitle("Micro (Model)")
+g3 <- ggplot(HetDataFrame, aes(x = log10_Total_nUMI, y = HetMacro)) + geom_point() + ylim(Ylims) + xlab("") + ylab("") +
+  ggtitle("Macro (Model)")
+g4 <- ggplot(HetDataFrame, aes(x = log10_Total_nUMI, y = HetMicroPermutedAdj)) + geom_point() + ylim(Ylims) + xlab("") + ylab("") +
+  ggtitle("Micro (Permuted)")
+g5 <- ggplot(HetDataFrame, aes(x = log10_Total_nUMI, y = HetMacroPermuted)) + geom_point() + ylim(Ylims) + xlab("") + ylab("") +
+  ggtitle("Macro (Permuted)")
+
+g1 | ((g2 | g3) / (g4 | g5))
+```
+
