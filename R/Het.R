@@ -19,7 +19,7 @@ get_Het <- function(CountsMatrix) {
   for (ind in 1:Indices) {
     count <- CountsMatrix@x[(CountsMatrix@p[ind]+1) : CountsMatrix@p[ind+1]]
     freq <- count / Total[ind]
-    Het[ind] <- t(freq) %*% log(N*freq)
+    Het[ind] <- t(freq) %*% log2(N*freq)
   }
 
   Het[is.infinite(Het)] <- NA
@@ -47,7 +47,7 @@ subtract_HetSparse <- function(Het, CountsMatrix) {
   M <- Total
   M[M > N] <- N
 
-  HetAdj <- Het - log(N / M)
+  HetAdj <- Het - log2(N / M)
 
   HetAdj
 }
@@ -80,7 +80,7 @@ get_HetMacro <- function(CountsMatrix, groups, GroupedCounts) {
 
     NonZero <- 1 + GroupedCounts@i[(GroupedCounts@p[ind]+1) : GroupedCounts@p[ind+1]]
 
-    Het[ind] <- t(freq) %*% log(N*freq /  Ng[NonZero])
+    Het[ind] <- t(freq) %*% log2(N*freq /  Ng[NonZero])
   }
 
   Het[is.infinite(Het)] <- 0

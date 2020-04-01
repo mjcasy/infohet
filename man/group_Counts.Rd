@@ -2,7 +2,7 @@
 % Please edit documentation in R/Grouped.R
 \name{group_Counts}
 \alias{group_Counts}
-\title{Group counts by cell identity}
+\title{Sum counts by group}
 \usage{
 group_Counts(CountsMatrix, groups)
 }
