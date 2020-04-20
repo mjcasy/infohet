@@ -7,15 +7,24 @@
 get_HetMacro(CountsMatrix, groups, GroupedCounts)
 }
 \arguments{
-\item{CountsMatrix}{dgCMatrix}
+\item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
-\item{groups}{factor}
+\item{groups}{Factor of cell identities}
 
-\item{GroupedCounts}{dgCMatrix}
+\item{GroupedCounts}{Feature x grouped cells sparse counts matrix of class dgCMatrix}
 }
 \value{
 
 }
 \description{
-Calaculate Information in Model
+Calculates HetMacro, the heterogeneity explained by a given model of population structure,
+in a gene-wise manner
+}
+\examples{
+Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
+                               j = c(1,2,3,4,1,2,3),
+                               x = c(2,2,2,2,3,3,2))
+Ident <- factor(c("1", "1", "2", "2"))
+GroupCounts <- group_Counts(Counts, Ident)
+get_HetMacro(Counts, Ident, GroupCounts)
 }

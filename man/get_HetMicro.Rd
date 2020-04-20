@@ -4,20 +4,29 @@
 \alias{get_HetMicro}
 \title{Calaculate Information not in Model}
 \usage{
-get_HetMicro(CountsMatrix, groups, GroupedCounts, reduced = T)
+get_HetMicro(CountsMatrix, groups, GroupedCounts, full = F)
 }
 \arguments{
-\item{CountsMatrix}{dgCMatrix}
+\item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
-\item{groups}{factor}
+\item{groups}{Factor of cell identities}
 
-\item{GroupedCounts}{dgCMatrix}
+\item{GroupedCounts}{Feature x grouped cells sparse counts matrix of class dgCMatrix}
 
-\item{reduced}{logical}
+\item{full}{Logical flag for whether to return just HetMicro or full Het by group}
 }
 \value{
 
 }
 \description{
-Calaculate Information not in Model
+Calculates HetMicro, the heterogeneity within each group of cells, or its weigthed
+average (default)
+}
+\examples{
+Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
+                               j = c(1,2,3,4,1,2,3),
+                               x = c(2,2,2,2,3,3,2))
+Ident <- factor(c("1", "1", "2", "2"))
+GroupCounts <- group_Counts(Counts, Ident)
+get_HetMicro(Counts, Ident, GroupCounts)
 }

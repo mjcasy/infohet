@@ -7,14 +7,22 @@
 get_Het(CountsMatrix)
 }
 \arguments{
-\item{CountsMatrix}{dgCMatrix. Feature x cell sparse counts matrix.}
+\item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 }
 \value{
 Numeric vector of length equal to the number of features (rows in CountsMatrix)
 }
 \description{
-Calculates Het, the information encoded in heterogeneity, on a gene-wise basis.
+Calculates Het, the information encoded in heterogeneity, in a gene-wise manner
 }
 \details{
-Output units of bits. Theoretical maximum of calculation is log number of cells.
+Output has units of bits. Theoretical maximum of calculation is log number of cells.
+}
+\examples{
+Counts <- Matrix::sparseMatrix(i = c(2,3,3),
+                               j = c(1,1,2),
+                               x = c(1,1,1))
+Counts
+Het <-  get_Het(CountsMatrix = Counts)
+
 }

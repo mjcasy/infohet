@@ -1,19 +1,21 @@
 #' Information in Heterogeneity
 #'
-#' Calculates Het, the information encoded in heterogeneity, on a gene-wise basis.
+#' Calculates Het, the information encoded in heterogeneity, in a gene-wise manner
 #'
-#' @param CountsMatrix dgCMatrix. Feature x cell sparse counts matrix.
+#' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #'
 #' @return
-#' Numeric vector of length equal to the number of features (rows in CountsMatrix)
 #'
 #' @export
 #'
 #' @details
-#' Output units of bits. Theoretical maximum of calculation is log number of cells.
+#' Output has units of bits. Theoretical maximum of calculation is log number of cells.
 #'
 #' @examples
-#' Het <-  get_Het(CountsMatrix)
+#' Counts <- Matrix::sparseMatrix(i = c(2,3,3),
+#'                                j = c(1,1,2),
+#'                                x = c(1,1,1))
+#' Het <-  get_Het(CountsMatrix = Counts)
 #'
 get_Het <- function(CountsMatrix) {
 
@@ -41,8 +43,8 @@ get_Het <- function(CountsMatrix) {
 
 #' Subtract information due to count sparsity
 #'
-#' @param Het numeric. Vector of Het values of length equal to number of features.
-#' @param CountsMatrix dgCMatrix. Feature x cell sparse counts matrix.
+#' @param Het Numeric vector of Het values of length equal to number of features
+#' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #'
 #' @return
 #' Numeric vector of length equal to the number of features (rows in CountsMatrix)
@@ -56,6 +58,11 @@ get_Het <- function(CountsMatrix) {
 #' subtracted from Het.
 #'
 #' @examples
+#' Counts <- Matrix::sparseMatrix(i = c(1,2,2,2),
+#'                                j = c(1,1,2,2),
+#'                                x = rep(1, 4))
+#' Het <- get_Het(Counts)
+#' subtract_HetSparse(Het, Counts)
 subtract_HetSparse <- function(Het, CountsMatrix) {
 
   Total <- Matrix::rowSums(CountsMatrix)
@@ -71,15 +78,28 @@ subtract_HetSparse <- function(Het, CountsMatrix) {
 
 #' Calaculate Information in Model
 #'
-#' @param CountsMatrix dgCMatrix
-#' @param groups factor
-#' @param GroupedCounts dgCMatrix
+#' Calculates HetMacro, the heterogeneity explained by a given model of population structure,
+#' in a gene-wise manner
+#'
+#' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
+#' @param groups Factor of cell identities
+#' @param GroupedCounts Feature x grouped cells sparse counts matrix of class dgCMatrix
 #'
 #' @return
 #' @export
 #'
 #' @examples
+#' Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
+#'                                j = c(1,2,3,4,1,2,3),
+#'                                x = c(2,2,2,2,3,3,2))
+#' Ident <- factor(c("1", "1", "2", "2"))
+#' GroupCounts <- group_Counts(Counts, Ident)
+#' get_HetMacro(Counts, Ident, GroupCounts)
 get_HetMacro <- function(CountsMatrix, groups, GroupedCounts) {
+
+  if(length(groups) != ncol(CountsMatrix)){
+    warning("Inconsistent number of cells between objects:\n\tlength(groups) != ncol(CountsMatrix)")
+  }
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
@@ -109,16 +129,29 @@ get_HetMacro <- function(CountsMatrix, groups, GroupedCounts) {
 
 #' Calaculate Information not in Model
 #'
-#' @param CountsMatrix dgCMatrix
-#' @param groups factor
-#' @param GroupedCounts dgCMatrix
-#' @param reduced logical
+#' Calculates HetMicro, the heterogeneity within each group of cells, or its weigthed
+#' average (default)
+#'
+#' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
+#' @param groups Factor of cell identities
+#' @param GroupedCounts Feature x grouped cells sparse counts matrix of class dgCMatrix
+#' @param full Logical flag for whether to return just HetMicro or full Het by group
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_HetMicro <- function(CountsMatrix, groups, GroupedCounts, reduced = T) {
+#' Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
+#'                                j = c(1,2,3,4,1,2,3),
+#'                                x = c(2,2,2,2,3,3,2))
+#' Ident <- factor(c("1", "1", "2", "2"))
+#' GroupCounts <- group_Counts(Counts, Ident)
+#' get_HetMicro(Counts, Ident, GroupCounts)
+get_HetMicro <- function(CountsMatrix, groups, GroupedCounts, full = F) {
+
+  if(length(groups) != ncol(CountsMatrix)){
+    warning("Inconsistent number of cells between objects:\n\tlength(groups) != ncol(CountsMatrix)")
+  }
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
@@ -143,10 +176,10 @@ get_HetMicro <- function(CountsMatrix, groups, GroupedCounts, reduced = T) {
 
   Average <- Matrix::rowSums(FreqMatrix * HetMicro)
 
-  if(reduced == T){
+  if(full == F){
     HetMicro <- Average
     names(HetMicro) <- rownames(CountsMatrix)
-  } else if(reduced == F){
+  } else if(full == T){
     HetMicro <- cbind(HetMicro, Average)
     rownames(HetMicro) <- rownames(CountsMatrix)
   }
