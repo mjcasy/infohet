@@ -1,11 +1,20 @@
-#' Calculate Information in Heterogeneity
+#' Information in Heterogeneity
 #'
-#' @param CountsMatrix dgCMatrix
+#' Calculates Het, the information encoded in heterogeneity, on a gene-wise basis.
+#'
+#' @param CountsMatrix dgCMatrix. Feature x cell sparse counts matrix.
 #'
 #' @return
+#' Numeric vector of length equal to the number of features (rows in CountsMatrix)
+#'
 #' @export
 #'
+#' @details
+#' Output units of bits. Theoretical maximum of calculation is log number of cells.
+#'
 #' @examples
+#' Het <-  get_Het(CountsMatrix)
+#'
 get_Het <- function(CountsMatrix) {
 
   Total <- Matrix::rowSums(CountsMatrix)
@@ -32,11 +41,19 @@ get_Het <- function(CountsMatrix) {
 
 #' Subtract information due to count sparsity
 #'
-#' @param Het vector
-#' @param CountsMatrix dgCMatrix
+#' @param Het numeric. Vector of Het values of length equal to number of features.
+#' @param CountsMatrix dgCMatrix. Feature x cell sparse counts matrix.
 #'
 #' @return
+#' Numeric vector of length equal to the number of features (rows in CountsMatrix)
+#'
 #' @export
+#'
+#' @details
+#' Sparisty is defined here as a feature having some number of counts M, less than
+#' N, the number of cells.
+#' The minimum information of a sparse feature is log N/M bits, which is
+#' subtracted from Het.
 #'
 #' @examples
 subtract_HetSparse <- function(Het, CountsMatrix) {

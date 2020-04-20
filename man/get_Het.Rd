@@ -2,16 +2,19 @@
 % Please edit documentation in R/Het.R
 \name{get_Het}
 \alias{get_Het}
-\title{Calculate Information in Heterogeneity}
+\title{Information in Heterogeneity}
 \usage{
 get_Het(CountsMatrix)
 }
 \arguments{
-\item{CountsMatrix}{dgCMatrix}
+\item{CountsMatrix}{dgCMatrix. Feature x cell sparse counts matrix.}
 }
 \value{
-
+Numeric vector of length equal to the number of features (rows in CountsMatrix)
 }
 \description{
-Calculate Information in Heterogeneity
+Calculates Het, the information encoded in heterogeneity, on a gene-wise basis.
+}
+\details{
+Output units of bits. Theoretical maximum of calculation is log number of cells.
 }

@@ -7,13 +7,19 @@
 subtract_HetSparse(Het, CountsMatrix)
 }
 \arguments{
-\item{Het}{vector}
+\item{Het}{numeric. Vector of Het values of length equal to number of features.}
 
-\item{CountsMatrix}{dgCMatrix}
+\item{CountsMatrix}{dgCMatrix. Feature x cell sparse counts matrix.}
 }
 \value{
-
+Numeric vector of length equal to the number of features (rows in CountsMatrix)
 }
 \description{
 Subtract information due to count sparsity
+}
+\details{
+Sparisty is defined here as a feature having some number of counts M, less than
+N, the number of cells.
+The minimum information of a sparse feature is log N/M bits, which is
+subtracted from Het.
 }
