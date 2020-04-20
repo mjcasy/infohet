@@ -7,16 +7,20 @@
 group_Counts(CountsMatrix, groups)
 }
 \arguments{
-\item{CountsMatrix}{dgCMatrix}
+\item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
-\item{groups}{factor}
+\item{groups}{Factor of cell identities}
 }
 \value{
-dgCMatrix
+
 }
 \description{
 For a given grouping of cells, produces a sparse matrix where each column is the total counts in each group.
 }
 \examples{
-
+Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
+                               j = c(1,2,3,4,1,2,3),
+                               x = c(2,2,2,2,3,3,2))
+Ident <- factor(c("1", "1", "2", "2"))
+group_Counts(Counts, Ident)
 }
