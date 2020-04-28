@@ -7,21 +7,29 @@
 
 <!-- badges: end -->
 
-The goal of infohet is to calculate the information in heterogenity of
-scRNA-seq data.
+Pacakge for the calculation of the information in gene expression
+heterogeneity. Workflow below is for scRNA-seq, but it is potentially
+applicable to a wider range of data.
+
+Primary function is the calculation of Het, the minimum information that
+would be required to encode the observed heterogeneity in gene
+expression.
+
+Het can serve as the basis for various tasks in scRNA-seq analysis, with
+application to feature selection, cluster quality assesment and
+identification of differentially expressed genes.
 
 ## Installation
 
-And the development version from [GitHub](https://github.com/) with:
-
 ``` r
-# install.packages("devtools")
+install.packages("devtools")
 devtools::install_github("mjcasy/infohet")
 ```
 
 ## Workflow
 
-General setup. Load in Data and filter low expressing genes.
+General setup. Load in Data and filter low expressing genes (less than
+100 transcripts total).
 
 ``` r
 library(infohet)
@@ -40,7 +48,9 @@ if(any(Total < MinTotal)){
 }
 ```
 
-Standard sworkflow for the identification of informative genes.
+Feature Selection. The Het of each gene is found and adjusted for
+sparisty. Genes with excessive Het compared to simulation of the null
+are identified for selection.
 
 ``` r
 Het <- get_Het(CountsMatrix)
@@ -61,22 +71,23 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Het, colour = Selected)) + geo
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
 #> Warning: Removed 14 rows containing missing values (geom_point).
-#> Warning: Removed 332 rows containing missing values (geom_path).
+#> Warning: Removed 156 rows containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
+Cluster Quality. HetMicro is the gene-wise measure of information left
+unexplained by some labelling of cells. This labelling is typically the
+results of clustering for cell type identification. Genes with excessive
+HetMicro are inadequately explained by the clustering.
+
 ``` r
 GroupedCounts <- group_Counts(CountsMatrix, Identity)
-
-HetMacro <- get_HetMacro(CountsMatrix, Identity, GroupedCounts)
 
 HetMicro <- get_HetMicro(CountsMatrix, Identity, GroupedCounts)
 HetMicroAdj <- subtract_HetSparse(HetMicro, CountsMatrix)
 
-HetDataFrame <- cbind(HetDataFrame, HetMacro, HetMicroAdj)
-
-Ylims <- c(min(HetMicroAdj), log(ncol(CountsMatrix)))
+HetDataFrame <- cbind(HetDataFrame, HetMicroAdj)
 
 ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMicroAdj, colour = Selected)) + geom_point() +
   geom_line(aes(y = Null_Model), colour = "black") + 
@@ -85,10 +96,24 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMicroAdj, colour = Selected
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
-``` r
+Differential Gene Expression. HetMacro is the information explained by a
+grouping of cells. When only two labels are supplied, HetMacro is
+analogous to DGE tests. Most genes will have a non-zero amount of
+HetMacro due to technical effects. Either an arbitrary threshold
+(e.g. 0.05 bits) should be used or the labelling can be permuted and
+the mean HetMacro from a set of pwermutations used.
 
-ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMacro, colour = Selected)) + geom_point() +
+``` r
+DEGroup <- factor(ifelse(Identity == 17, "1", "2"))
+
+GroupedCounts <- group_Counts(CountsMatrix, DEGroup)
+
+HetMacro <- get_HetMacro(CountsMatrix, DEGroup, GroupedCounts)
+
+HetDataFrame <- cbind(HetDataFrame, HetMacro)
+
+ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMacro, colour = HetMacro > 0.05)) + geom_point() +
   ylim(0, log2(N))
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
