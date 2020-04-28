@@ -41,7 +41,7 @@ load("../Data/10x/CountsMatrix")
 load("../Data/10x/Identity")
 
 MinTotal <- 100
-InfoThreshold <- 0.25
+InfoThreshold <- 0.5
 
 Total <- Matrix::rowSums(CountsMatrix)
 if(any(Total < MinTotal)){

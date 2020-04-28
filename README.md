@@ -31,7 +31,7 @@ load("../Data/10x/CountsMatrix")
 load("../Data/10x/Identity")
 
 MinTotal <- 100
-InfoThreshold <- 0.25
+InfoThreshold <- 0.5
 
 Total <- Matrix::rowSums(CountsMatrix)
 if(any(Total < MinTotal)){
@@ -61,7 +61,7 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Het, colour = Selected)) + geo
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
 #> Warning: Removed 14 rows containing missing values (geom_point).
-#> Warning: Removed 14 rows containing missing values (geom_path).
+#> Warning: Removed 332 rows containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
