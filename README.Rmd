@@ -42,7 +42,7 @@ library(ggplot2)
 # Sparse Counts Matrix
 load("../Data/10x/CountsMatrix")
 
-# Cluster labels
+# Factor of cell identities (i.e. cluster labels)
 load("../Data/10x/Identity")
 
 MinTotal <- 100
