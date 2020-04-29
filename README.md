@@ -35,7 +35,10 @@ General setup. Load in Data and filter low expressing genes (less than
 library(infohet)
 library(ggplot2)
 
+# Sparse Counts Matrix
 load("../Data/10x/CountsMatrix")
+
+# Cluster labels
 load("../Data/10x/Identity")
 
 MinTotal <- 100
@@ -71,7 +74,7 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Het, colour = Selected)) + geo
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
 #> Warning: Removed 14 rows containing missing values (geom_point).
-#> Warning: Removed 156 rows containing missing values (geom_path).
+#> Warning: Removed 744 rows containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />

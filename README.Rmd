@@ -39,7 +39,10 @@ General setup. Load in Data and filter low expressing genes (less than 100 trans
 library(infohet)
 library(ggplot2)
 
+# Sparse Counts Matrix
 load("../Data/10x/CountsMatrix")
+
+# Cluster labels
 load("../Data/10x/Identity")
 
 MinTotal <- 100
