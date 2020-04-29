@@ -1,7 +1,7 @@
 
 #' Sum counts by group
 #'
-#' For a given grouping of cells, produces a sparse matrix where each column is the total counts in each group.
+#' For a given grouping of cells, produces a sparse matrix where each column is the total counts for each group.
 #'
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param groups Factor of cell identities

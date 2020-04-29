@@ -52,7 +52,7 @@ get_Het <- function(CountsMatrix) {
 #' @export
 #'
 #' @details
-#' Sparisty is defined here as a feature having some number of counts M, less than
+#' Sparsity is defined here as a feature having some number of counts M, less than
 #' N, the number of cells.
 #' The minimum information of a sparse feature is log N/M bits, which is
 #' subtracted from Het.

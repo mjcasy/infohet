@@ -55,7 +55,7 @@ if(any(Total < MinTotal)){
 }
 ```
 
-Feature Selection. The Het of each gene is found and adjusted for sparisty. Genes with excessive Het compared to simulation of the null are identified for selection.
+Feature Selection. The Het of each gene is found and adjusted for sparsity. Genes with excessive Het compared to simulation of the null are identified for selection.
 
 ```{r}
 Het <- get_Het(CountsMatrix)

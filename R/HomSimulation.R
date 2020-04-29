@@ -17,7 +17,7 @@
 #'
 #' @details
 #' Null model is simulated over set of cells of size N, where N is the number of cells in CountsMatrix.
-#' Some number of counts is probabilistically assigned to cells either with either equal probability or observed count depths (total counts per cell)
+#' Some number of counts is randomly assigned to cells either with equal probability or in proportion to observed count depths (total counts per cell)
 #' Het is calculated for each trial. The mean Het for each number of counts is found.
 #' The null Het for each gene is then assigned by interpolation.
 #'
