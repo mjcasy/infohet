@@ -9,7 +9,7 @@
 #' @param SimStep Step size, in log10 counts, between number of counts simulated
 #' @param TotalCounts Optional integer vector of total counts for simualted cells.
 #'                    Default set internally is 10 to max cell counts with SimStep steps
-#' @param depth_adjusted Logical flag for whether simulated cells should be
+#' @param DepthAdjusted Logical flag for whether simulated cells should be
 #'                       assigned counts in ratio of corresponding library sizes
 #'
 #' @return
@@ -27,8 +27,8 @@
 #'                                j = c(1,2,1,2),
 #'                                x = c(1000,9000,5000,5000))
 #' SimCounts <- 10000
-#' simulate_Hom(Counts)
-simulate_Hom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts = NA, depth_adjusted = T) {
+#' simulateHom(Counts)
+simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts = NA, DepthAdjusted = T) {
 
   Totals <- Matrix::rowSums(CountsMatrix)
   Range <- range(log10(Totals))
@@ -40,19 +40,19 @@ simulate_Hom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCount
   TrialDepths <- rep(TotalCounts, each = NumTrials)
   NumCells <- ncol(CountsMatrix)
 
-  if (depth_adjusted == T) {
+  if (DepthAdjusted == T) {
     SimHet <- sapply(TrialDepths, function(NumTranscripts){
       Cells <- sample(NumCells, NumTranscripts, replace = T, prob = Probs)
       Ones <- rep(1, NumTranscripts)
       Mat <- Matrix::sparseMatrix(j = Cells, i = Ones, x = Ones)
-      get_Het(Mat)
+      getHet(Mat)
     })
   } else {
     SimHet <- sapply(TrialDepths, function(NumTranscripts){
       Cells <- sample(NumCells, NumTranscripts, replace = T)
       Ones <- rep(1, NumTranscripts)
       Mat <- Matrix::sparseMatrix(j = Cells, i = Ones, x = Ones)
-      get_Het(Mat)
+      getHet(Mat)
     })
   }
 

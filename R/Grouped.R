@@ -4,7 +4,7 @@
 #' For a given grouping of cells, produces a sparse matrix where each column is the total counts for each group.
 #'
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
-#' @param groups Factor of cell identities
+#' @param Groups Factor of cell identities
 #'
 #' @return
 #' @export
@@ -14,20 +14,20 @@
 #'                                j = c(1,2,3,4,1,2,3),
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
-#' group_Counts(Counts, Ident)
-group_Counts <- function(CountsMatrix, groups) {
+#' groupCounts(Counts, Ident)
+groupCounts <- function(CountsMatrix, Groups) {
 
-  if(length(groups) != ncol(CountsMatrix)){
-    warning("Inconsistent number of cells between objects:\n\tlength(groups) != ncol(CountsMatrix)")
+  if(length(Groups) != ncol(CountsMatrix)){
+    warning("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
   }
 
-  types <- levels(groups)
+  types <- levels(Groups)
   I <- length(types)
 
   CountsList <- list()
 
   for (i in 1:I) {
-    CountsList[[i]] <- CountsMatrix[,groups == types[i], drop = FALSE]
+    CountsList[[i]] <- CountsMatrix[,Groups == types[i], drop = FALSE]
   }
 
   GroupedCounts <- lapply(CountsList, Matrix::rowSums)

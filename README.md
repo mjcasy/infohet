@@ -41,13 +41,13 @@ load("../Data/10x/CountsMatrix")
 # Factor of cell identities (i.e. cluster labels)
 load("../Data/10x/Identity")
 
-MinTotal <- 100
-InfoThreshold <- 0.5
+minTotal <- 100
+infoThreshold <- 0.5
 
 Total <- Matrix::rowSums(CountsMatrix)
-if(any(Total < MinTotal)){
-   CountsMatrix <- CountsMatrix[-which(Total < MinTotal),]
-   Total <- Total[-which(Total < MinTotal)]
+if(any(Total < minTotal)){
+   CountsMatrix <- CountsMatrix[-which(Total < minTotal),]
+   Total <- Total[-which(Total < minTotal)]
 }
 ```
 
@@ -56,25 +56,25 @@ sparsity. Genes with excessive Het compared to simulation of the null
 are identified for selection.
 
 ``` r
-Het <- get_Het(CountsMatrix)
-HetAdj <- subtract_HetSparse(Het, CountsMatrix)
+Het <- getHet(CountsMatrix)
+HetAdj <- subtractHetSparse(Het, CountsMatrix)
 
-NullHet <- simulate_Hom(CountsMatrix)
-NullHet <- subtract_HetSparse(NullHet, CountsMatrix)
+nullHet <- simulateHom(CountsMatrix)
+nullHet <- subtractHetSparse(nullHet, CountsMatrix)
 
-Threshold <- NullHet+InfoThreshold
+Threshold <- nullHet+infoThreshold
 
 N <- CountsMatrix@Dim[2]
 Mean_nUMI <- Total / N
 
-HetDataFrame <- data.frame(log10(Mean_nUMI), HetAdj, NullHet, Threshold, HetAdj > Threshold)
+HetDataFrame <- data.frame(log10(Mean_nUMI), HetAdj, nullHet, Threshold, HetAdj > Threshold)
 colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Het", "Null_Model", "Threshold", "Selected")
 
 ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Het, colour = Selected)) + geom_point() +
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
 #> Warning: Removed 14 rows containing missing values (geom_point).
-#> Warning: Removed 167 rows containing missing values (geom_path).
+#> Warning: Removed 139 rows containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
@@ -85,16 +85,16 @@ results of clustering for cell type identification. Genes with excessive
 HetMicro are inadequately explained by the clustering.
 
 ``` r
-GroupedCounts <- group_Counts(CountsMatrix, Identity)
+GroupedCounts <- groupCounts(CountsMatrix, Identity)
 
-HetMicro <- get_HetMicro(CountsMatrix, Identity, GroupedCounts)
-HetMicroAdj <- subtract_HetSparse(HetMicro, CountsMatrix)
+HetMicro <- getHetMicro(CountsMatrix, Identity, GroupedCounts)
+HetMicroAdj <- subtractHetSparse(HetMicro, CountsMatrix)
 
 HetDataFrame <- cbind(HetDataFrame, HetMicroAdj)
 
 ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMicroAdj, colour = Selected)) + geom_point() +
   geom_line(aes(y = Null_Model), colour = "black") + 
-  ylim(-log2(MinTotal), log2(N))
+  ylim(-log2(minTotal), log2(N))
 ```
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
@@ -109,9 +109,9 @@ the mean HetMacro from a set of pwermutations used.
 ``` r
 DEGroup <- factor(ifelse(Identity == 17, "1", "2"))
 
-GroupedCounts <- group_Counts(CountsMatrix, DEGroup)
+GroupedCounts <- groupCounts(CountsMatrix, DEGroup)
 
-HetMacro <- get_HetMacro(CountsMatrix, DEGroup, GroupedCounts)
+HetMacro <- getHetMacro(CountsMatrix, DEGroup, GroupedCounts)
 
 HetDataFrame <- cbind(HetDataFrame, HetMacro)
 
