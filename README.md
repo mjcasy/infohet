@@ -21,7 +21,7 @@ for a set labelling of cells, it can be split into that information
 explainable by the labelling (HetMacro), and that left unexplained
 (HetMicro).
 
-\[Het(X) = HetMacro(X,l) + HetMicro(X,l)\]
+\(Het(X) = HetMacro(X,l) + HetMicro(X,l)\)
 
 Where X is the observed gene expression distribution and l is a
 labelling of cells, for example by cell type.
@@ -88,6 +88,7 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Het, colour = Selected)) + geo
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
 #> Warning: Removed 14 rows containing missing values (geom_point).
+#> Warning: Removed 484 row(s) containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />

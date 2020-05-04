@@ -11,8 +11,8 @@ Description: Functions for the calculation of the information content encoded in
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-URL: https://github.com/mcaseySoton/infohet
-BugReports: https://github.com/mcaseySoton/infohet/issues
+URL: https://github.com/mjcasy/infohet
+BugReports: https://github.com/mjcasy/infohet/issues
 Imports: 
     Matrix,
     stats

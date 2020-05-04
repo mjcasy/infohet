@@ -22,7 +22,7 @@ There is a need for the robust quantification of cellular heterogeneity in singl
  
 Cellular heterogeneity can be broadly split into that due to the presence of multiple distinct cell types (macro-heterogeneity) and that due to technical effects and stochastic fluctuations (micro-heterogeneity). Information is additively decomposable so that for a set labelling of cells, it can be split into that information explainable by the labelling (HetMacro), and that left unexplained (HetMicro).
  
-$$Het(X) = HetMacro(X,l) + HetMicro(X,l)$$
+$Het(X) = HetMacro(X,l) + HetMicro(X,l)$
 
 Where X is the observed gene expression distribution and l is a labelling of cells, for example by cell type.
 
