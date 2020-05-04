@@ -7,17 +7,28 @@
 
 <!-- badges: end -->
 
-Pacakge for the calculation of the information in gene expression
-heterogeneity. Workflow below is for scRNA-seq, but it is potentially
-applicable to a wider range of data.
+There is a need for the robust quantification of cellular heterogeneity
+in single-cell RNA-sequencing data. This package is based around an
+information-theoretic measure of heterogeneity, quantifying
+heterogeneity as the information required to produce the observed
+pattern of gene expression (Het).
 
-Primary function is the calculation of Het, the minimum information that
-would be required to encode the observed heterogeneity in gene
-expression.
+Cellular heterogeneity can be broadly split into that due to the
+presence of multiple distinct cell types (macro-heterogeneity) and that
+due to technical effects and stochastic fluctuations
+(micro-heterogeneity). Information is additively decomposable so that
+for a set labelling of cells, it can be split into that information
+explainable by the labelling (HetMacro), and that left unexplained
+(HetMicro).
 
-Het can serve as the basis for various tasks in scRNA-seq analysis, with
-application to feature selection, cluster quality assesment and
-identification of differentially expressed genes.
+\[Het(X) = HetMacro(X,l) + HetMicro(X,l)\]
+
+Where X is the observed gene expression distribution and l is a
+labelling of cells, for example by cell type.
+
+We can apply this framework to various scRNA-seq analysis tasks,
+including feature selection, cluster assessment and identification of
+differentially expressed genes.
 
 ## Installation
 
@@ -51,9 +62,12 @@ if(any(Total < minTotal)){
 }
 ```
 
-Feature Selection. The Het of each gene is found and adjusted for
-sparsity. Genes with excessive Het compared to simulation of the null
-are identified for selection.
+Feature Selection based on Het, the information content in gene
+expression. The Het of each gene is found and adjusted for sparsity.
+Genes with excessive Het compared to simulation of the null are
+identified for selection. The null distribution is either a discrete
+uniform or a multinomial with probabilities in proportion to cell count
+depths (default).
 
 ``` r
 Het <- getHet(CountsMatrix)
@@ -74,15 +88,15 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Het, colour = Selected)) + geo
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
 #> Warning: Removed 14 rows containing missing values (geom_point).
-#> Warning: Removed 139 rows containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
-Cluster Quality. HetMicro is the gene-wise measure of information left
-unexplained by some labelling of cells. This labelling is typically the
-results of clustering for cell type identification. Genes with excessive
-HetMicro are inadequately explained by the clustering.
+Cluster Quality based on HetMicro. HetMicro is the gene-wise measure of
+information left unexplained by some labelling of cells. This labelling
+is typically the results of clustering for cell type identification.
+Genes with excessive HetMicro are inadequately explained by the
+clustering.
 
 ``` r
 GroupedCounts <- groupCounts(CountsMatrix, Identity)
@@ -99,12 +113,12 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMicroAdj, colour = Selected
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
-Differential Gene Expression. HetMacro is the information explained by a
-grouping of cells. When only two labels are supplied, HetMacro is
-analogous to DGE tests. Most genes will have a non-zero amount of
-HetMacro due to technical effects. Either an arbitrary threshold
-(e.g. 0.05 bits) should be used or the labelling can be permuted and
-the mean HetMacro from a set of pwermutations used.
+Differential Gene Expression based on HetMacro. HetMacro is the
+information explained by a labelling of cells. When only two unique
+labels are supplied, HetMacro is analogous to DGE tests. Most genes will
+have a non-zero amount of HetMacro due to technical effects. Either an
+arbitrary threshold (e.g. 0.05 bits) should be used or the labelling can
+be permuted and the mean HetMacro from a set of permutations used.
 
 ``` r
 DEGroup <- factor(ifelse(Identity == 17, "1", "2"))
