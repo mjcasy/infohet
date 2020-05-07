@@ -7,28 +7,9 @@
 
 <!-- badges: end -->
 
-There is a need for the robust quantification of cellular heterogeneity
-in single-cell RNA-sequencing data. This package is based around an
-information-theoretic measure of heterogeneity, quantifying
-heterogeneity as the information required to produce the observed
-pattern of gene expression (Het).
+Package for the quantification of the information content of single-cell RNA-sequencing data-sets. Based on the quantification of information in heterogeneity (infohet).
 
-Cellular heterogeneity can be broadly split into that due to the
-presence of multiple distinct cell types (macro-heterogeneity) and that
-due to technical effects and stochastic fluctuations
-(micro-heterogeneity). Information is additively decomposable so that
-for a set labelling of cells, it can be split into that information
-explainable by the labelling (HetMacro), and that left unexplained
-(HetMicro).
-
-\(Het(X) = HetMacro(X,l) + HetMicro(X,l)\)
-
-Where X is the observed gene expression distribution and l is a
-labelling of cells, for example by cell type.
-
-We can apply this framework to various scRNA-seq analysis tasks,
-including feature selection, cluster assessment and identification of
-differentially expressed genes.
+Below are example applications to feature selection, cluster assessment and identification of differentially expressed genes.
 
 ## Installation
 
@@ -62,12 +43,7 @@ if(any(Total < minTotal)){
 }
 ```
 
-Feature Selection based on Het, the information content in gene
-expression. The Het of each gene is found and adjusted for sparsity.
-Genes with excessive Het compared to simulation of the null are
-identified for selection. The null distribution is either a discrete
-uniform or a multinomial with probabilities in proportion to cell count
-depths (default).
+Feature Selection. Select genes with the most information (Het) unexplained by technical effects (Hom) or sparsity (HetSparse). Technical model samples from categorical distribution in proportion to cell library depths. 
 
 ``` r
 Het <- getHet(CountsMatrix)
@@ -93,11 +69,7 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Het, colour = Selected)) + geo
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
-Cluster Quality based on HetMicro. HetMicro is the gene-wise measure of
-information left unexplained by some labelling of cells. This labelling
-is typically the results of clustering for cell type identification.
-Genes with excessive HetMicro are inadequately explained by the
-clustering.
+Cluster Assessment. A good clustering of cells should minimise unexplained information (HetMicro).
 
 ``` r
 GroupedCounts <- groupCounts(CountsMatrix, Identity)
@@ -114,12 +86,7 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMicroAdj, colour = Selected
 
 <img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
 
-Differential Gene Expression based on HetMacro. HetMacro is the
-information explained by a labelling of cells. When only two unique
-labels are supplied, HetMacro is analogous to DGE tests. Most genes will
-have a non-zero amount of HetMacro due to technical effects. Either an
-arbitrary threshold (e.g. 0.05 bits) should be used or the labelling can
-be permuted and the mean HetMacro from a set of permutations used.
+Differential Expression. Identification of genes with substantial information explainable by one cluster vs remaining (HetMacro). Most genes will have a non-zero amount of HetMacro due to technical effects. Either an arbitrary threshold (e.g. 0.05 bits) should be used or the labelling can be permuted and the mean HetMacro from a set of permutations used.
 
 ``` r
 DEGroup <- factor(ifelse(Identity == 17, "1", "2"))
