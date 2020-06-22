@@ -31,7 +31,7 @@ devtools::install_github("mjcasy/infohet")
 
 General setup. Load in Data and filter low expressing genes (less than 100 transcripts total). 
 
-```{r}
+```{r, Setup}
 library(infohet)
 library(ggplot2)
 library(Seurat)
@@ -52,7 +52,7 @@ Visualise gene-wise information - the amount of information gain from knowing th
 
 Homogeneity, adjusted for the difference in total count depths of cells, is simulated to provide a null baseline of information.
 
-```{r}
+```{r, Het}
 Het <- getHet(CountsMatrix)
 HetAdj <- subtractHetSparse(Het, CountsMatrix)
 
@@ -74,7 +74,7 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Information, colour = HighlyIn
 
 Generate set of clusters, e.g. from Seurat pipeline, ranging over hyperparameter of interest, e.g. resolution.
 
-```{r, eval = F}
+```{r, Cluster, eval = F}
 SeuObj <- Seurat::CreateSeuratObject(CountsMatrix)
 SeuObj <- Seurat::SCTransform(SeuObj)
 
@@ -103,21 +103,21 @@ for(i in 1:length(Resolutions)){
 Elbow <- cbind(Resolutions, NumClusters, InformationExplained)
 ```
 
-```{r, include = FALSE}
+```{r, Hidden load, include = FALSE}
 load("../Entropy/maximum_entropy/Figures/TianElbow")
 load("../Entropy/maximum_entropy/Figures/TianClus")
 ```
 
 Elbow Plot of total information explained by clustering against resolution hyperparameter and cluster number
 
-```{r, echo = FALSE}
+```{r, Elbow plot, echo = FALSE}
 plot(Elbow[,1], Elbow[,3], ylab = "Total Information Explained", xlab = "Number of Clusters", type = "l")
 plot(Elbow[,2], Elbow[,3], ylab = "Total Information Explained", xlab = "Number of Clusters", type = "l")
 ```
 
 Gene-wise information left unexplained by chosen clustering
 
-```{r}
+```{r, Unexplained}
 GroupedCounts <- groupCounts(CountsMatrix, SeuObj$SCT_snn_res.0.01)
 HetMicro <- getHetMicro(CountsMatrix, SeuObj$SCT_snn_res.0.01, GroupedCounts)
 HetMicro <- subtractHetSparse(HetMicro, CountsMatrix)

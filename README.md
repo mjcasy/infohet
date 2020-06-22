@@ -12,6 +12,7 @@ RNA-sequencing data-sets, and how much of this information has been
 captured by clustering. Based on the quantification of information in
 heterogeneity (infohet).
 
+
 ## Installation
 
 ``` r
@@ -47,6 +48,7 @@ knowing the cellular allocation of transcripts for each gene.
 Homogeneity, adjusted for the difference in total count depths of cells,
 is simulated to provide a null baseline of information.
 
+
 ``` r
 Het <- getHet(CountsMatrix)
 HetAdj <- subtractHetSparse(Het, CountsMatrix)
@@ -70,8 +72,10 @@ ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Information, colour = HighlyIn
 
 <img src="man/figures/README-Het-1.png" width="100%" />
 
+
 Generate set of clusters, e.g. from Seurat pipeline, ranging over
 hyperparameter of interest, e.g. resolution.
+
 
 ``` r
 SeuObj <- Seurat::CreateSeuratObject(CountsMatrix)
@@ -105,6 +109,7 @@ Elbow <- cbind(Resolutions, NumClusters, InformationExplained)
 Elbow Plot of total information explained by clustering against
 resolution hyperparameter and cluster
 number
+
 
 <img src="man/figures/README-Elbow plot-1.png" width="100%" /><img src="man/figures/README-Elbow plot-2.png" width="100%" />
 
