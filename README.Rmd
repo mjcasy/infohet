@@ -111,7 +111,7 @@ load("../Entropy/maximum_entropy/Figures/TianClus")
 Elbow Plot of total information explained by clustering against resolution hyperparameter and cluster number
 
 ```{r, Elbow plot, echo = FALSE}
-plot(Elbow[,1], Elbow[,3], ylab = "Total Information Explained", xlab = "Number of Clusters", type = "l")
+plot(Elbow[,1], Elbow[,3], ylab = "Total Information Explained", xlab = "Resolution", type = "l")
 plot(Elbow[,2], Elbow[,3], ylab = "Total Information Explained", xlab = "Number of Clusters", type = "l")
 ```
 

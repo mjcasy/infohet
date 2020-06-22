@@ -12,7 +12,6 @@ RNA-sequencing data-sets, and how much of this information has been
 captured by clustering. Based on the quantification of information in
 heterogeneity (infohet).
 
-
 ## Installation
 
 ``` r
@@ -28,6 +27,7 @@ General setup. Load in Data and filter low expressing genes (less than
 ``` r
 library(infohet)
 library(ggplot2)
+#> Use suppressPackageStartupMessages() to eliminate package startup messages
 library(Seurat)
 
 load("../Data/Tian2018/CountsMatrix")
@@ -48,7 +48,6 @@ knowing the cellular allocation of transcripts for each gene.
 Homogeneity, adjusted for the difference in total count depths of cells,
 is simulated to provide a null baseline of information.
 
-
 ``` r
 Het <- getHet(CountsMatrix)
 HetAdj <- subtractHetSparse(Het, CountsMatrix)
@@ -67,15 +66,13 @@ colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Information", "Null_Model")
 ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Information, colour = HighlyInformative)) + geom_point() +
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
-#> Warning: Removed 130 row(s) containing missing values (geom_path).
+#> Warning: Removed 118 row(s) containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-Het-1.png" width="100%" />
 
-
 Generate set of clusters, e.g. from Seurat pipeline, ranging over
 hyperparameter of interest, e.g. resolution.
-
 
 ``` r
 SeuObj <- Seurat::CreateSeuratObject(CountsMatrix)
@@ -109,7 +106,6 @@ Elbow <- cbind(Resolutions, NumClusters, InformationExplained)
 Elbow Plot of total information explained by clustering against
 resolution hyperparameter and cluster
 number
-
 
 <img src="man/figures/README-Elbow plot-1.png" width="100%" /><img src="man/figures/README-Elbow plot-2.png" width="100%" />
 
