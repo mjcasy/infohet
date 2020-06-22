@@ -7,28 +7,10 @@
 
 <!-- badges: end -->
 
-There is a need for the robust quantification of cellular heterogeneity
-in single-cell RNA-sequencing data. This package is based around an
-information-theoretic measure of heterogeneity, quantifying
-heterogeneity as the information required to produce the observed
-pattern of gene expression (Het).
-
-Cellular heterogeneity can be broadly split into that due to the
-presence of multiple distinct cell types (macro-heterogeneity) and that
-due to technical effects and stochastic fluctuations
-(micro-heterogeneity). Information is additively decomposable so that
-for a set labelling of cells, it can be split into that information
-explainable by the labelling (HetMacro), and that left unexplained
-(HetMicro).
-
-\(Het(X) = HetMacro(X,l) + HetMicro(X,l)\)
-
-Where X is the observed gene expression distribution and l is a
-labelling of cells, for example by cell type.
-
-We can apply this framework to various scRNA-seq analysis tasks,
-including feature selection, cluster assessment and identification of
-differentially expressed genes.
+Package for the quantification of the information content of single-cell
+RNA-sequencing data-sets, and how much of this information has been
+captured by clustering. Based on the quantification of information in
+heterogeneity (infohet).
 
 ## Installation
 
@@ -45,15 +27,12 @@ General setup. Load in Data and filter low expressing genes (less than
 ``` r
 library(infohet)
 library(ggplot2)
+library(Seurat)
 
-# Sparse Counts Matrix
-load("../Data/10x/CountsMatrix")
+load("../Data/Tian2018/CountsMatrix")
 
-# Factor of cell identities (i.e. cluster labels)
-load("../Data/10x/Identity")
-
-minTotal <- 100
 infoThreshold <- 0.5
+minTotal <- 100
 
 Total <- Matrix::rowSums(CountsMatrix)
 if(any(Total < minTotal)){
@@ -62,12 +41,11 @@ if(any(Total < minTotal)){
 }
 ```
 
-Feature Selection based on Het, the information content in gene
-expression. The Het of each gene is found and adjusted for sparsity.
-Genes with excessive Het compared to simulation of the null are
-identified for selection. The null distribution is either a discrete
-uniform or a multinomial with probabilities in proportion to cell count
-depths (default).
+Visualise gene-wise information - the amount of information gain from
+knowing the cellular allocation of transcripts for each gene.
+
+Homogeneity, adjusted for the difference in total count depths of cells,
+is simulated to provide a null baseline of information.
 
 ``` r
 Het <- getHet(CountsMatrix)
@@ -76,62 +54,74 @@ HetAdj <- subtractHetSparse(Het, CountsMatrix)
 nullHet <- simulateHom(CountsMatrix)
 nullHet <- subtractHetSparse(nullHet, CountsMatrix)
 
-Threshold <- nullHet+infoThreshold
+HighlyInformative <- HetAdj > nullHet + infoThreshold
 
 N <- CountsMatrix@Dim[2]
 Mean_nUMI <- Total / N
 
-HetDataFrame <- data.frame(log10(Mean_nUMI), HetAdj, nullHet, Threshold, HetAdj > Threshold)
-colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Het", "Null_Model", "Threshold", "Selected")
+HetDataFrame <- data.frame(log10(Mean_nUMI), HetAdj, nullHet)
+colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Information", "Null_Model")
 
-ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Het, colour = Selected)) + geom_point() +
+ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Information, colour = HighlyInformative)) + geom_point() +
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
-#> Warning: Removed 14 rows containing missing values (geom_point).
-#> Warning: Removed 484 row(s) containing missing values (geom_path).
+#> Warning: Removed 130 row(s) containing missing values (geom_path).
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-Het-1.png" width="100%" />
 
-Cluster Quality based on HetMicro. HetMicro is the gene-wise measure of
-information left unexplained by some labelling of cells. This labelling
-is typically the results of clustering for cell type identification.
-Genes with excessive HetMicro are inadequately explained by the
-clustering.
+Generate set of clusters, e.g. from Seurat pipeline, ranging over
+hyperparameter of interest, e.g. resolution.
 
 ``` r
-GroupedCounts <- groupCounts(CountsMatrix, Identity)
+SeuObj <- Seurat::CreateSeuratObject(CountsMatrix)
+SeuObj <- Seurat::SCTransform(SeuObj)
 
-HetMicro <- getHetMicro(CountsMatrix, Identity, GroupedCounts)
-HetMicroAdj <- subtractHetSparse(HetMicro, CountsMatrix)
+SeuObj <- RunPCA(SeuObj, verbose = FALSE)
 
-HetDataFrame <- cbind(HetDataFrame, HetMicroAdj)
+SeuObj <- FindNeighbors(SeuObj, dims = 1:30, verbose = FALSE)
 
-ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMicroAdj, colour = Selected)) + geom_point() +
+NumClusters <- c()
+InformationExplained <- c()
+Resolutions <- c(seq(0.0001, 0.001, 0.0001), seq(0.002, 0.01, 0.001), seq(0.02, 0.2, 0.01), seq(0.3, 1, 0.1))
+
+for(i in 1:length(Resolutions)){
+  Idents(SeuObj) <- NA
+  SeuObj <- FindClusters(SeuObj, verbose = FALSE, resolution = Resolutions[i])
+  
+  Identity <- Idents(SeuObj)
+  
+  GroupedCounts <- groupCounts(CountsMatrix, Identity)
+  
+  HetMacro <- getHetMacro(CountsMatrix, Identity, GroupedCounts)
+  
+  NumClusters[i] <- length(levels(Identity))
+  InformationExplained[i] <- sum(HetMacro) 
+}
+
+Elbow <- cbind(Resolutions, NumClusters, InformationExplained)
+```
+
+Elbow Plot of total information explained by clustering against
+resolution hyperparameter and cluster
+number
+
+<img src="man/figures/README-Elbow plot-1.png" width="100%" /><img src="man/figures/README-Elbow plot-2.png" width="100%" />
+
+Gene-wise information left unexplained by chosen clustering
+
+``` r
+GroupedCounts <- groupCounts(CountsMatrix, SeuObj$SCT_snn_res.0.01)
+HetMicro <- getHetMicro(CountsMatrix, SeuObj$SCT_snn_res.0.01, GroupedCounts)
+HetMicro <- subtractHetSparse(HetMicro, CountsMatrix)
+
+HighlyUnexplained <- HetMicro > nullHet + infoThreshold
+
+HetDataFrame <- cbind(HetDataFrame, HetMicro)
+ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMicro, colour = HighlyUnexplained)) + geom_point() +
   geom_line(aes(y = Null_Model), colour = "black") + 
-  ylim(-log2(minTotal), log2(N))
+  ylim(-log2(minTotal), log2(N)) +
+  ylab("Information Unexplained")
 ```
 
-<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
-
-Differential Gene Expression based on HetMacro. HetMacro is the
-information explained by a labelling of cells. When only two unique
-labels are supplied, HetMacro is analogous to DGE tests. Most genes will
-have a non-zero amount of HetMacro due to technical effects. Either an
-arbitrary threshold (e.g. 0.05 bits) should be used or the labelling can
-be permuted and the mean HetMacro from a set of permutations used.
-
-``` r
-DEGroup <- factor(ifelse(Identity == 17, "1", "2"))
-
-GroupedCounts <- groupCounts(CountsMatrix, DEGroup)
-
-HetMacro <- getHetMacro(CountsMatrix, DEGroup, GroupedCounts)
-
-HetDataFrame <- cbind(HetDataFrame, HetMacro)
-
-ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMacro, colour = HetMacro > 0.05)) + geom_point() +
-  ylim(0, log2(N))
-```
-
-<img src="man/figures/README-unnamed-chunk-5-1.png" width="100%" />
+<img src="man/figures/README-Unexplained-1.png" width="100%" />
