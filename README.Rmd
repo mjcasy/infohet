@@ -53,18 +53,16 @@ Visualise gene-wise information - the amount of information gain from knowing th
 Homogeneity, adjusted for the difference in total count depths of cells, is simulated to provide a null baseline of information.
 
 ```{r, Het}
-Het <- getHet(CountsMatrix)
-HetAdj <- subtractHetSparse(Het, CountsMatrix)
+Het <- getHet(CountsMatrix, subtractSparsity = T)
 
-nullHet <- simulateHom(CountsMatrix)
-nullHet <- subtractHetSparse(nullHet, CountsMatrix)
+nullHet <- simulateHom(CountsMatrix, subtractSparsity = T)
 
-HighlyInformative <- HetAdj > nullHet + infoThreshold
+HighlyInformative <- Het > nullHet + infoThreshold
 
 N <- CountsMatrix@Dim[2]
 Mean_nUMI <- Total / N
 
-HetDataFrame <- data.frame(log10(Mean_nUMI), HetAdj, nullHet)
+HetDataFrame <- data.frame(log10(Mean_nUMI), Het, nullHet)
 colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Information", "Null_Model")
 
 ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Information, colour = HighlyInformative)) + geom_point() +
@@ -92,9 +90,7 @@ for(i in 1:length(Resolutions)){
   
   Identity <- Idents(SeuObj)
   
-  GroupedCounts <- groupCounts(CountsMatrix, Identity)
-  
-  HetMacro <- getHetMacro(CountsMatrix, Identity, GroupedCounts)
+  HetMacro <- getHetMacro(CountsMatrix, Identity)
   
   NumClusters[i] <- length(levels(Identity))
   InformationExplained[i] <- sum(HetMacro) 
@@ -118,9 +114,7 @@ plot(Elbow[,2], Elbow[,3], ylab = "Total Information Explained", xlab = "Number 
 Gene-wise information left unexplained by chosen clustering
 
 ```{r, Unexplained}
-GroupedCounts <- groupCounts(CountsMatrix, SeuObj$SCT_snn_res.0.01)
-HetMicro <- getHetMicro(CountsMatrix, SeuObj$SCT_snn_res.0.01, GroupedCounts)
-HetMicro <- subtractHetSparse(HetMicro, CountsMatrix)
+HetMicro <- getHetMicro(CountsMatrix, SeuObj$SCT_snn_res.0.01, subtractSparsity = T)
 
 HighlyUnexplained <- HetMicro > nullHet + infoThreshold
 

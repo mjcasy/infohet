@@ -4,10 +4,12 @@
 \alias{getHet}
 \title{Information in Heterogeneity}
 \usage{
-getHet(CountsMatrix)
+getHet(CountsMatrix, subtractSparsity = F)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
+
+\item{subtractSparsity}{Subtract information due to count sparsity}
 }
 \value{
 

@@ -27,7 +27,6 @@ General setup. Load in Data and filter low expressing genes (less than
 ``` r
 library(infohet)
 library(ggplot2)
-#> Use suppressPackageStartupMessages() to eliminate package startup messages
 library(Seurat)
 
 load("../Data/Tian2018/CountsMatrix")
@@ -49,24 +48,22 @@ Homogeneity, adjusted for the difference in total count depths of cells,
 is simulated to provide a null baseline of information.
 
 ``` r
-Het <- getHet(CountsMatrix)
-HetAdj <- subtractHetSparse(Het, CountsMatrix)
+Het <- getHet(CountsMatrix, subtractSparsity = T)
 
-nullHet <- simulateHom(CountsMatrix)
-nullHet <- subtractHetSparse(nullHet, CountsMatrix)
+nullHet <- simulateHom(CountsMatrix, subtractSparsity = T)
 
-HighlyInformative <- HetAdj > nullHet + infoThreshold
+HighlyInformative <- Het > nullHet + infoThreshold
 
 N <- CountsMatrix@Dim[2]
 Mean_nUMI <- Total / N
 
-HetDataFrame <- data.frame(log10(Mean_nUMI), HetAdj, nullHet)
+HetDataFrame <- data.frame(log10(Mean_nUMI), Het, nullHet)
 colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Information", "Null_Model")
 
 ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Information, colour = HighlyInformative)) + geom_point() +
   geom_line(aes(y = Null_Model), colour = "black") + 
   ylim(0, log2(N))
-#> Warning: Removed 118 row(s) containing missing values (geom_path).
+#> Warning: Removed 48 row(s) containing missing values (geom_path).
 ```
 
 <img src="man/figures/README-Het-1.png" width="100%" />
@@ -92,9 +89,7 @@ for(i in 1:length(Resolutions)){
   
   Identity <- Idents(SeuObj)
   
-  GroupedCounts <- groupCounts(CountsMatrix, Identity)
-  
-  HetMacro <- getHetMacro(CountsMatrix, Identity, GroupedCounts)
+  HetMacro <- getHetMacro(CountsMatrix, Identity)
   
   NumClusters[i] <- length(levels(Identity))
   InformationExplained[i] <- sum(HetMacro) 
@@ -109,12 +104,11 @@ number
 
 <img src="man/figures/README-Elbow plot-1.png" width="100%" /><img src="man/figures/README-Elbow plot-2.png" width="100%" />
 
-Gene-wise information left unexplained by chosen clustering
+Gene-wise information left unexplained by chosen
+clustering
 
 ``` r
-GroupedCounts <- groupCounts(CountsMatrix, SeuObj$SCT_snn_res.0.01)
-HetMicro <- getHetMicro(CountsMatrix, SeuObj$SCT_snn_res.0.01, GroupedCounts)
-HetMicro <- subtractHetSparse(HetMicro, CountsMatrix)
+HetMicro <- getHetMicro(CountsMatrix, SeuObj$SCT_snn_res.0.01, subtractSparsity = T)
 
 HighlyUnexplained <- HetMicro > nullHet + infoThreshold
 

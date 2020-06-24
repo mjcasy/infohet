@@ -4,12 +4,12 @@
 \alias{subtractHetSparse}
 \title{Subtract information due to count sparsity}
 \usage{
-subtractHetSparse(Het, CountsMatrix)
+subtractHetSparse(CountsMatrix, Het)
 }
 \arguments{
-\item{Het}{Numeric vector of Het values of length equal to number of features}
-
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
+
+\item{Het}{Numeric vector of Het values of length equal to number of features}
 }
 \value{
 Numeric vector of length equal to the number of features (rows in CountsMatrix)
@@ -28,5 +28,5 @@ Counts <- Matrix::sparseMatrix(i = c(1,2,2,2),
                                j = c(1,1,2,2),
                                x = rep(1, 4))
 Het <- getHet(Counts)
-subtractHetSparse(Het, Counts)
+subtractHetSparse(Counts, Het)
 }

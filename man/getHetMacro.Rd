@@ -4,14 +4,12 @@
 \alias{getHetMacro}
 \title{Calaculate Information in Model}
 \usage{
-getHetMacro(CountsMatrix, Groups, groupedCounts)
+getHetMacro(CountsMatrix, Groups)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
 \item{Groups}{Factor of cell identities}
-
-\item{groupedCounts}{Feature x grouped cells sparse counts matrix of class dgCMatrix}
 }
 \value{
 
@@ -26,5 +24,5 @@ Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
                                x = c(2,2,2,2,3,3,2))
 Ident <- factor(c("1", "1", "2", "2"))
 GroupCounts <- groupCounts(Counts, Ident)
-getHetMacro(Counts, Ident, GroupCounts)
+getHetMacro(Counts, Ident)
 }

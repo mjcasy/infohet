@@ -11,6 +11,7 @@
 #'                    Default set internally is 10 to max cell counts with SimStep steps
 #' @param DepthAdjusted Logical flag for whether simulated cells should be
 #'                       assigned counts in ratio of corresponding library sizes
+#' @param subtractSparsity Subtract information due to count sparsity
 #'
 #' @return
 #' @export
@@ -26,9 +27,8 @@
 #' Counts <- Matrix::sparseMatrix(i = c(1,1,2,2),
 #'                                j = c(1,2,1,2),
 #'                                x = c(1000,9000,5000,5000))
-#' SimCounts <- 10000
 #' simulateHom(Counts)
-simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts = NA, DepthAdjusted = T) {
+simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts = NA, DepthAdjusted = T, subtractSparsity = F) {
 
   Totals <- Matrix::rowSums(CountsMatrix)
   Range <- range(log10(Totals))
@@ -61,6 +61,10 @@ simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts
 
   NullHet <- Nullfun(Totals)
   names(NullHet) <- rownames(CountsMatrix)
+
+  if(subtractSparsity == T){
+    NullHet <- subtractHetSparse(CountsMatrix, NullHet)
+  }
 
   NullHet
 }

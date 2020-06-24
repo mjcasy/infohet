@@ -4,16 +4,16 @@
 \alias{getHetMicro}
 \title{Calaculate Information not in Model}
 \usage{
-getHetMicro(CountsMatrix, Groups, groupedCounts, full = F)
+getHetMicro(CountsMatrix, Groups, full = F, subtractSparsity = F)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
 \item{Groups}{Factor of cell identities}
 
-\item{groupedCounts}{Feature x grouped cells sparse counts matrix of class dgCMatrix}
-
 \item{full}{Logical flag for whether to return just HetMicro or full Het by group}
+
+\item{subtractSparsity}{Subtract information due to count sparsity. If full also TRUE, also applies to each group.}
 }
 \value{
 
@@ -28,5 +28,5 @@ Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
                                x = c(2,2,2,2,3,3,2))
 Ident <- factor(c("1", "1", "2", "2"))
 GroupCounts <- groupCounts(Counts, Ident)
-getHetMicro(Counts, Ident, GroupCounts)
+getHetMicro(Counts, Ident)
 }

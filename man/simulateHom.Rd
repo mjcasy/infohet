@@ -9,7 +9,8 @@ simulateHom(
   NumTrials = 50,
   SimStep = 0.2,
   TotalCounts = NA,
-  DepthAdjusted = T
+  DepthAdjusted = T,
+  subtractSparsity = F
 )
 }
 \arguments{
@@ -24,6 +25,8 @@ Default set internally is 10 to max cell counts with SimStep steps}
 
 \item{DepthAdjusted}{Logical flag for whether simulated cells should be
 assigned counts in ratio of corresponding library sizes}
+
+\item{subtractSparsity}{Subtract information due to count sparsity}
 }
 \value{
 
@@ -42,6 +45,5 @@ The null Het for each gene is then assigned by interpolation.
 Counts <- Matrix::sparseMatrix(i = c(1,1,2,2),
                                j = c(1,2,1,2),
                                x = c(1000,9000,5000,5000))
-SimCounts <- 10000
 simulateHom(Counts)
 }
