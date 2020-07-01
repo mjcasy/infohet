@@ -30,8 +30,8 @@
 #' simulateHom(Counts)
 simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts = NA, DepthAdjusted = T, subtractSparsity = F) {
 
-  Totals <- Matrix::rowSums(CountsMatrix)
-  Range <- range(log10(Totals))
+  Total <- Matrix::rowSums(CountsMatrix)
+  Range <- range(log10(Total))
   TotalCounts <- round(10^seq(1, Range[2], SimStep))
 
   CellTotal <- Matrix::colSums(CountsMatrix)
@@ -59,7 +59,7 @@ simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts
   meanHet <- tapply(SimHet, as.factor(TrialDepths), mean)
   Nullfun <- stats::splinefun(TotalCounts, meanHet)
 
-  NullHet <- Nullfun(Totals)
+  NullHet <- Nullfun(Total)
   names(NullHet) <- rownames(CountsMatrix)
 
   if(subtractSparsity == T){
