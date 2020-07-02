@@ -173,6 +173,7 @@ getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F) {
   HetList <- lapply(X = CountsList, FUN = getHet, subtractSparsity = F)
 
   HetMicro <- matrix(unlist(HetList), nrow = nrow(CountsMatrix), ncol = I)
+  HetMicro[is.na(HetMicro)] <- 0
   HetMicro[is.infinite(HetMicro)] <- 0
   colnames(HetMicro) <- types
   rownames(HetMicro) <- rownames(CountsMatrix)
