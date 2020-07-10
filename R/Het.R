@@ -141,6 +141,7 @@ getHetMacro <- function(CountsMatrix, Groups) {
 #' @param Groups Factor of cell identities
 #' @param full Logical flag for whether to return just HetMicro or full Het by group
 #' @param subtractSparsity Subtract information due to count sparsity. If full also TRUE, also applies to each group.
+#' @param components Logical flag for whether to return just HetMicro or additive components of HetMicro by group
 #'
 #' @return
 #' @export
@@ -152,10 +153,14 @@ getHetMacro <- function(CountsMatrix, Groups) {
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' GroupCounts <- groupCounts(Counts, Ident)
 #' getHetMicro(Counts, Ident)
-getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F) {
+getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F, components = F) {
 
   if(length(Groups) != ncol(CountsMatrix)){
     warning("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
+  }
+
+  if(sum(full, components) == 2){
+    warning("Both components and full should not be TRUE")
   }
 
   Total <- Matrix::rowSums(CountsMatrix)
@@ -182,7 +187,9 @@ getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F) {
 
   FreqMatrix <- groupedCounts * Total^-1
 
-  Overall <- Matrix::rowSums(FreqMatrix * HetMicro)
+  Components <- FreqMatrix * HetMicro
+
+  Overall <- Matrix::rowSums(Components)
 
   if(subtractSparsity == T){
     for(i in 1:ncol(HetMicro)){
@@ -196,6 +203,9 @@ getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F) {
     names(HetMicro) <- rownames(CountsMatrix)
   } else if(full == T){
     HetMicro <- cbind(HetMicro, Overall)
+    rownames(HetMicro) <- rownames(CountsMatrix)
+  } else if(components == T){
+    HetMicro <- cbind(Components, Overall)
     rownames(HetMicro) <- rownames(CountsMatrix)
   }
 
