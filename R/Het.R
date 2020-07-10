@@ -198,14 +198,14 @@ getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F, co
     Overall <- subtractHetSparse(CountsMatrix, Overall)
   }
 
-  if(full == F){
+  if(full == F & components == F){
     HetMicro <- Overall
     names(HetMicro) <- rownames(CountsMatrix)
   } else if(full == T){
     HetMicro <- cbind(HetMicro, Overall)
     rownames(HetMicro) <- rownames(CountsMatrix)
   } else if(components == T){
-    HetMicro <- cbind(Components, Overall)
+    HetMicro <- cbind(as.matrix(Components), Overall)
     rownames(HetMicro) <- rownames(CountsMatrix)
   }
 
