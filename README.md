@@ -5,6 +5,8 @@
 
 <!-- badges: start -->
 
+[![Codecov test
+coverage](https://codecov.io/gh/mjcasy/infohet/branch/master/graph/badge.svg)](https://codecov.io/gh/mjcasy/infohet?branch=master)
 <!-- badges: end -->
 
 Package for the quantification of the information content of single-cell

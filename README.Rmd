@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # infohet
 
 <!-- badges: start -->
+[![Codecov test coverage](https://codecov.io/gh/mjcasy/infohet/branch/master/graph/badge.svg)](https://codecov.io/gh/mjcasy/infohet?branch=master)
 <!-- badges: end -->
 
 Package for the quantification of the information content of single-cell RNA-sequencing data-sets, and how much of this information has been explained by clustering. Based on the quantification of information in heterogeneity (infohet).

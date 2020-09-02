@@ -18,7 +18,7 @@
 groupCounts <- function(CountsMatrix, Groups) {
 
   if(length(Groups) != ncol(CountsMatrix)){
-    warning("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
+    stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
   }
 
   types <- levels(Groups)

@@ -96,12 +96,11 @@ subtractHetSparse <- function(CountsMatrix, Het) {
 #'                                j = c(1,2,3,4,1,2,3),
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
-#' GroupCounts <- groupCounts(Counts, Ident)
 #' getHetMacro(Counts, Ident)
 getHetMacro <- function(CountsMatrix, Groups) {
 
   if(length(Groups) != ncol(CountsMatrix)){
-    warning("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
+    stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
   }
 
   Total <- Matrix::rowSums(CountsMatrix)
@@ -151,16 +150,15 @@ getHetMacro <- function(CountsMatrix, Groups) {
 #'                                j = c(1,2,3,4,1,2,3),
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
-#' GroupCounts <- groupCounts(Counts, Ident)
 #' getHetMicro(Counts, Ident)
 getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F, components = F) {
 
   if(length(Groups) != ncol(CountsMatrix)){
-    warning("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
+    stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
   }
 
   if(sum(full, components) == 2){
-    warning("Both components and full should not be TRUE")
+    stop("Both components and full should not be TRUE")
   }
 
   Total <- Matrix::rowSums(CountsMatrix)
