@@ -9,7 +9,7 @@
 
 Package for the quantification of the information content of single-cell
 RNA-sequencing data-sets, and how much of this information has been
-captured by clustering. Based on the quantification of information in
+explained by clustering. Based on the quantification of information in
 heterogeneity (infohet).
 
 ## Installation
@@ -26,8 +26,7 @@ General setup. Load in Data and filter low expressing genes (less than
 
 ``` r
 library(infohet)
-library(ggplot2)
-library(Seurat)
+library(RColorBrewer)
 
 load("../Data/Tian2018/CountsMatrix")
 
@@ -42,7 +41,9 @@ if(any(Total < minTotal)){
 ```
 
 Visualise gene-wise information - the amount of information gain from
-knowing the cellular allocation of transcripts for each gene.
+knowing the cellular allocation of transcripts for each gene. This
+corresponds to the information left unexplained by assuming each gene is
+homogenous in expression.
 
 Homogeneity, adjusted for the difference in total count depths of cells,
 is simulated to provide a null baseline of information.
@@ -58,20 +59,65 @@ N <- CountsMatrix@Dim[2]
 Mean_nUMI <- Total / N
 
 HetDataFrame <- data.frame(log10(Mean_nUMI), Het, nullHet)
-colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Information", "Null_Model")
+colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Unexplained_Information", "Null_Model")
 
-ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = Information, colour = HighlyInformative)) + geom_point() +
-  geom_line(aes(y = Null_Model), colour = "black") + 
-  ylim(0, log2(N))
-#> Warning: Removed 48 row(s) containing missing values (geom_path).
+ColourSelected <- brewer.pal(9, "Blues")[8]
+ColourNotSelected <- brewer.pal(9, "Blues")[4]
+Order <- order(HetDataFrame$log10_Mean_nUMI)
+
+with(HetDataFrame, plot(log10_Mean_nUMI, 
+                        Unexplained_Information,
+                        col = ifelse(HighlyInformative, ColourSelected, ColourNotSelected),
+                        ylim = c(0, log2(N)),
+                        pch = 20)
+     )
+lines(HetDataFrame$log10_Mean_nUMI[Order], HetDataFrame$Null_Model[Order], col = "red", lwd = 2)
 ```
 
-<img src="man/figures/README-Het-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
 
-Generate set of clusters, e.g. from Seurat pipeline, ranging over
-hyperparameter of interest, e.g. resolution.
+The example Tian dataset has a known cluster structure. The amount of
+information left unexplained by assuming each gene is homogenously
+expressed within each cluster is found.
 
 ``` r
+load("../Data/Tian2018/Identity")
+
+Clustered_Unexplained_Information <- getHetMicro(CountsMatrix, Identity, subtractSparsity = T)
+HetDataFrame <- cbind(HetDataFrame, Clustered_Unexplained_Information)
+
+with(HetDataFrame, plot(log10_Mean_nUMI, 
+                        Clustered_Unexplained_Information,
+                        col = ifelse(HighlyInformative, ColourSelected, ColourNotSelected),
+                        ylim = c(-log2(N/100), log2(N)),
+                        pch = 20)
+     )
+lines(HetDataFrame$log10_Mean_nUMI[Order], HetDataFrame$Null_Model[Order], col = "red", lwd = 2)
+```
+
+<img src="man/figures/README-unnamed-chunk-4-1.png" width="100%" />
+
+Information is additive between independent sources. Taking each gene as
+independent, the total information left unexplained in the transcriptome
+can be found.
+
+The goal of clustering is to identify a set of homogenous
+subpopulations, i.e. cell types. Therefore, the chosen clustering should
+minimise the amount of information left unexplained by the assumption of
+cluster homogeneity.
+
+All else being equal, information will never decrease with increasing
+cluster number. There is therefore a trade-off - the optimal clustering
+is that which leaves the least information unexplained in the fewest
+clusters. This can be assessed by an elbow analysis, shown below using
+the Seurat (v3) clustering pipeline.
+
+The chosen clustering can be reapplied to identify which genes are well
+explained by the clustering (see above figure).
+
+``` r
+library(Seurat)
+
 SeuObj <- Seurat::CreateSeuratObject(CountsMatrix)
 SeuObj <- Seurat::SCTransform(SeuObj)
 
@@ -80,7 +126,7 @@ SeuObj <- RunPCA(SeuObj, verbose = FALSE)
 SeuObj <- FindNeighbors(SeuObj, dims = 1:30, verbose = FALSE)
 
 NumClusters <- c()
-InformationExplained <- c()
+InformationUnexplained <- c()
 Resolutions <- c(seq(0.0001, 0.001, 0.0001), seq(0.002, 0.01, 0.001), seq(0.02, 0.2, 0.01), seq(0.3, 1, 0.1))
 
 for(i in 1:length(Resolutions)){
@@ -89,34 +135,17 @@ for(i in 1:length(Resolutions)){
   
   Identity <- Idents(SeuObj)
   
-  HetMacro <- getHetMacro(CountsMatrix, Identity)
+  HetMicro <- getHetMicro(CountsMatrix, Identity)
   
   NumClusters[i] <- length(levels(Identity))
-  InformationExplained[i] <- sum(HetMacro) 
+  InformationUnexplained[i] <- sum(HetMicro) 
 }
 
-Elbow <- cbind(Resolutions, NumClusters, InformationExplained)
+Elbow <- cbind(Resolutions, NumClusters, InformationUnexplained)
 ```
 
 Elbow Plot of total information explained by clustering against
 resolution hyperparameter and cluster
 number
 
-<img src="man/figures/README-Elbow plot-1.png" width="100%" /><img src="man/figures/README-Elbow plot-2.png" width="100%" />
-
-Gene-wise information left unexplained by chosen
-clustering
-
-``` r
-HetMicro <- getHetMicro(CountsMatrix, SeuObj$SCT_snn_res.0.01, subtractSparsity = T)
-
-HighlyUnexplained <- HetMicro > nullHet + infoThreshold
-
-HetDataFrame <- cbind(HetDataFrame, HetMicro)
-ggplot(HetDataFrame, aes(x = log10_Mean_nUMI, y = HetMicro, colour = HighlyUnexplained)) + geom_point() +
-  geom_line(aes(y = Null_Model), colour = "black") + 
-  ylim(-log2(minTotal), log2(N)) +
-  ylab("Information Unexplained")
-```
-
-<img src="man/figures/README-Unexplained-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-7-2.png" width="100%" />

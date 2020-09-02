@@ -4,7 +4,13 @@
 \alias{getHetMicro}
 \title{Calaculate Information not in Model}
 \usage{
-getHetMicro(CountsMatrix, Groups, full = F, subtractSparsity = F)
+getHetMicro(
+  CountsMatrix,
+  Groups,
+  full = F,
+  subtractSparsity = F,
+  components = F
+)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
@@ -14,6 +20,8 @@ getHetMicro(CountsMatrix, Groups, full = F, subtractSparsity = F)
 \item{full}{Logical flag for whether to return just HetMicro or full Het by group}
 
 \item{subtractSparsity}{Subtract information due to count sparsity. If full also TRUE, also applies to each group.}
+
+\item{components}{Logical flag for whether to return just HetMicro or additive components of HetMicro by group}
 }
 \value{
 
