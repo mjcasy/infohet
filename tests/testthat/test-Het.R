@@ -7,7 +7,7 @@ test_that("getHet works at extremes", {
                                  j = c(1,1,2),
                                  x = c(1,1,1))
   expect_equal(getHet(Counts), c(0,1,0))
-  expect_equal(getHet(Counts, subtractSparsity = T), c(-Inf,0,0))
+  expect_equal(getHet(Counts, subtractSparsity = T), c(NA,0,0))
 })
 
 test_that("getHetMacro works at extremes", {

@@ -77,6 +77,8 @@ subtractHetSparse <- function(CountsMatrix, Het) {
 
   HetAdj <- Het - log2(N / M)
 
+  HetAdj[M == 0] <- NA
+
   HetAdj
 }
 

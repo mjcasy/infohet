@@ -35,6 +35,5 @@ Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
                                j = c(1,2,3,4,1,2,3),
                                x = c(2,2,2,2,3,3,2))
 Ident <- factor(c("1", "1", "2", "2"))
-GroupCounts <- groupCounts(Counts, Ident)
 getHetMicro(Counts, Ident)
 }
