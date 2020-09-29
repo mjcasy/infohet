@@ -7,8 +7,7 @@
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param NumTrials Number of trials of simulation
 #' @param SimStep Step size, in log10 counts, between number of counts simulated
-#' @param TotalCounts Optional integer vector of total counts for simualted cells.
-#'                    Default set internally is 10 to max cell counts with SimStep steps
+#' @param Spline Logical flag for whether to simulate each gene directly or infer Het from splining
 #' @param DepthAdjusted Logical flag for whether simulated cells should be
 #'                       assigned counts in ratio of corresponding library sizes
 #' @param subtractSparsity Subtract information due to count sparsity
@@ -28,11 +27,15 @@
 #'                                j = c(1,2,1,2),
 #'                                x = c(1000,9000,5000,5000))
 #' simulateHom(Counts)
-simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts = NA, DepthAdjusted = T, subtractSparsity = F) {
+simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, Spline = T, DepthAdjusted = T, subtractSparsity = F) {
 
   Total <- Matrix::rowSums(CountsMatrix)
   Range <- range(log10(Total))
-  TotalCounts <- round(10^seq(1, Range[2], SimStep))
+  if(Spline == F){
+    TotalCounts <- Total
+  } else if(Spline == T){
+    TotalCounts <- round(10^seq(1, Range[2], SimStep))
+  }
 
   CellTotal <- Matrix::colSums(CountsMatrix)
   Probs <- CellTotal / sum(CellTotal)
@@ -57,9 +60,14 @@ simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, TotalCounts
   }
 
   meanHet <- tapply(SimHet, as.factor(TrialDepths), mean)
-  Nullfun <- stats::splinefun(TotalCounts, meanHet)
 
-  NullHet <- Nullfun(Total)
+  if(Spline == F){
+    NullHet <- meanHet
+  } else if(Spline == T){
+    Nullfun <- stats::splinefun(TotalCounts, meanHet)
+    NullHet <- Nullfun(Total)
+  }
+
   names(NullHet) <- rownames(CountsMatrix)
 
   if(subtractSparsity == T){

@@ -8,7 +8,7 @@ simulateHom(
   CountsMatrix,
   NumTrials = 50,
   SimStep = 0.2,
-  TotalCounts = NA,
+  Spline = T,
   DepthAdjusted = T,
   subtractSparsity = F
 )
@@ -20,8 +20,7 @@ simulateHom(
 
 \item{SimStep}{Step size, in log10 counts, between number of counts simulated}
 
-\item{TotalCounts}{Optional integer vector of total counts for simualted cells.
-Default set internally is 10 to max cell counts with SimStep steps}
+\item{Spline}{Logical flag for whether to simulate each gene directly or infer Het from splining}
 
 \item{DepthAdjusted}{Logical flag for whether simulated cells should be
 assigned counts in ratio of corresponding library sizes}
