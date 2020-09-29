@@ -51,9 +51,9 @@ Homogeneity, adjusted for the difference in total count depths of cells,
 is simulated to provide a null baseline of information.
 
 ``` r
-Het <- getHet(CountsMatrix, subtractSparsity = T)
+Het <- getHet(CountsMatrix)
 
-nullHet <- simulateHom(CountsMatrix, subtractSparsity = T)
+nullHet <- simulateHom(CountsMatrix)
 
 HighlyInformative <- Het > nullHet + infoThreshold
 
@@ -85,13 +85,15 @@ expressed within each cluster is found.
 ``` r
 load("../Data/Tian2018/Identity")
 
-Clustered_Unexplained_Information <- getHetMicro(CountsMatrix, Identity, subtractSparsity = T)
+Clustered_Unexplained_Information <- getHetMicro(CountsMatrix, Identity)
 HetDataFrame <- cbind(HetDataFrame, Clustered_Unexplained_Information)
+
+HighlyInformativeDecomp <- Clustered_Unexplained_Information > nullHet + infoThreshold
 
 with(HetDataFrame, plot(log10_Mean_nUMI, 
                         Clustered_Unexplained_Information,
-                        col = ifelse(HighlyInformative, ColourSelected, ColourNotSelected),
-                        ylim = c(-log2(N/100), log2(N)),
+                        col = ifelse(HighlyInformativeDecomp, ColourSelected, ColourNotSelected),
+                        ylim = c(0, log2(N)),
                         pch = 20)
      )
 lines(HetDataFrame$log10_Mean_nUMI[Order], HetDataFrame$Null_Model[Order], col = "red", lwd = 2)
