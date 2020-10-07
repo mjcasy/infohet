@@ -12,7 +12,8 @@ coverage](https://codecov.io/gh/mjcasy/infohet/branch/master/graph/badge.svg)](h
 Package for the quantification of the information content of single-cell
 RNA-sequencing data-sets, and how much of this information has been
 explained by clustering. Based on the quantification of information in
-heterogeneity (infohet).
+heterogeneity (infohet). Preprint -
+<https://www.biorxiv.org/content/10.1101/2020.10.01.322255v1>
 
 ## Installation
 
