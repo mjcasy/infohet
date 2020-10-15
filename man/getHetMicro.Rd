@@ -24,7 +24,7 @@ getHetMicro(
 \item{components}{Logical flag for whether to return just HetMicro or additive components of HetMicro by group}
 }
 \value{
-
+Numeric vector of gene-wise HetMicro
 }
 \description{
 Calculates HetMicro, the heterogeneity within each group of cells, or its weigthed

@@ -145,6 +145,9 @@ Elbow Plot of total information explained by clustering against resolution hyper
 
 ```{r, echo = FALSE}
 plot(Elbow[,1], Elbow[,3], ylab = "Total Information Unexplained", xlab = "Resolution", type = "l")
+```
+
+```{r, echo = FALSE}
 plot(Elbow[,2], Elbow[,3], ylab = "Total Information Unexplained", xlab = "Number of Clusters", type = "l")
 abline(v = 5, col = "red")
 ```

@@ -12,7 +12,7 @@ getHet(CountsMatrix, subtractSparsity = F)
 \item{subtractSparsity}{Subtract information due to count sparsity}
 }
 \value{
-
+Numeric vector of gene-wise Het
 }
 \description{
 Calculates Het, the information encoded in heterogeneity, in a gene-wise manner

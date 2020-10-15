@@ -6,7 +6,7 @@
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param Groups Factor of cell identities
 #'
-#' @return
+#' @return Feature x group matrix of class dgCMatrix
 #' @export
 #'
 #' @examples

@@ -12,7 +12,7 @@ getHetMacro(CountsMatrix, Groups)
 \item{Groups}{Factor of cell identities}
 }
 \value{
-
+Numeric vector of gene-wise HetMacro
 }
 \description{
 Calculates HetMacro, the heterogeneity explained by a given model of population structure,

@@ -150,7 +150,8 @@ Elbow <- cbind(Resolutions, NumClusters, InformationUnexplained)
 ```
 
 Elbow Plot of total information explained by clustering against
-resolution hyperparameter and cluster
-number
+resolution hyperparameter and cluster number
 
-<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" /><img src="man/figures/README-unnamed-chunk-7-2.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
+
+<img src="man/figures/README-unnamed-chunk-8-1.png" width="100%" />

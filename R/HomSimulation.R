@@ -12,7 +12,7 @@
 #'                       assigned counts in ratio of corresponding library sizes
 #' @param subtractSparsity Subtract information due to count sparsity
 #'
-#' @return
+#' @return Numeric vector of gene-wise simulated Het
 #' @export
 #'
 #' @details

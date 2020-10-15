@@ -5,7 +5,7 @@
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param subtractSparsity Subtract information due to count sparsity
 #'
-#' @return
+#' @return Numeric vector of gene-wise Het
 #'
 #' @export
 #'
@@ -90,7 +90,7 @@ subtractHetSparse <- function(CountsMatrix, Het) {
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param Groups Factor of cell identities
 #'
-#' @return
+#' @return Numeric vector of gene-wise HetMacro
 #' @export
 #'
 #' @examples
@@ -144,7 +144,7 @@ getHetMacro <- function(CountsMatrix, Groups) {
 #' @param subtractSparsity Subtract information due to count sparsity. If full also TRUE, also applies to each group.
 #' @param components Logical flag for whether to return just HetMicro or additive components of HetMicro by group
 #'
-#' @return
+#' @return Numeric vector of gene-wise HetMicro
 #' @export
 #'
 #' @examples

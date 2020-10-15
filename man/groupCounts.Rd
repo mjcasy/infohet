@@ -12,7 +12,7 @@ groupCounts(CountsMatrix, Groups)
 \item{Groups}{Factor of cell identities}
 }
 \value{
-
+Feature x group matrix of class dgCMatrix
 }
 \description{
 For a given grouping of cells, produces a sparse matrix where each column is the total counts for each group.

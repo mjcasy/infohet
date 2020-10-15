@@ -28,7 +28,7 @@ assigned counts in ratio of corresponding library sizes}
 \item{subtractSparsity}{Subtract information due to count sparsity}
 }
 \value{
-
+Numeric vector of gene-wise simulated Het
 }
 \description{
 Simulates null model of gene expression for given count matrix, producing
