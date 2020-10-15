@@ -35,3 +35,13 @@ test_that("simulation sparsity correction works", {
   expect_equal(simulateHom(Counts, subtractSparsity = T), T3 - log2(2/M))
 })
 
+test_that("extremes of simulation approximately correct without spline", {
+  Counts <- Matrix::sparseMatrix(i = c(1,1,2,2),
+                                 j = c(1,2,1,2),
+                                 x = c(2*10^6,10,0,1))
+  set.seed(1)
+  T4 <- simulateHom(Counts, Spline = F)
+  expect_equal(T4[1], 1, tolerance = 1e-1)
+  expect_equal(T4[2], 0, tolerance = 1e-4)
+})
+

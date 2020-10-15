@@ -62,7 +62,7 @@ simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, Spline = T,
   meanHet <- tapply(SimHet, as.factor(TrialDepths), mean)
 
   if(Spline == F){
-    NullHet <- meanHet
+    NullHet <- meanHet[as.character(Total)]
   } else if(Spline == T){
     Nullfun <- stats::splinefun(TotalCounts, meanHet)
     NullHet <- Nullfun(Total)
