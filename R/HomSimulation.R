@@ -7,6 +7,7 @@
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param NumTrials Number of trials of simulation
 #' @param SimStep Step size, in log10 counts, between number of counts simulated
+#' @param shrinkage Boolean flag on whether to use James-Stein type shrinkage estimator
 #' @param Spline Logical flag for whether to simulate each gene directly or infer Het from splining
 #' @param DepthAdjusted Logical flag for whether simulated cells should be
 #'                       assigned counts in ratio of corresponding library sizes
@@ -27,7 +28,7 @@
 #'                                j = c(1,2,1,2),
 #'                                x = c(1000,9000,5000,5000))
 #' simulateHom(Counts)
-simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, Spline = T, DepthAdjusted = T, subtractSparsity = F) {
+simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, shrinkage = F, Spline = T, DepthAdjusted = T, subtractSparsity = F) {
 
   Total <- Matrix::rowSums(CountsMatrix)
   Range <- range(log10(Total))
@@ -48,14 +49,14 @@ simulateHom <- function(CountsMatrix, NumTrials = 50, SimStep = 0.2, Spline = T,
       Cells <- sample(NumCells, NumTranscripts, replace = T, prob = Probs)
       Ones <- rep(1, NumTranscripts)
       Mat <- Matrix::sparseMatrix(j = Cells, i = Ones, x = Ones)
-      getHet(Mat)
+      getHet(Mat, shrinkage = shrinkage)
     })
   } else {
     SimHet <- sapply(TrialDepths, function(NumTranscripts){
       Cells <- sample(NumCells, NumTranscripts, replace = T)
       Ones <- rep(1, NumTranscripts)
       Mat <- Matrix::sparseMatrix(j = Cells, i = Ones, x = Ones)
-      getHet(Mat)
+      getHet(Mat, shrinkage = shrinkage)
     })
   }
 

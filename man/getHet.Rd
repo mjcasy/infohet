@@ -4,10 +4,12 @@
 \alias{getHet}
 \title{Information in Heterogeneity}
 \usage{
-getHet(CountsMatrix, subtractSparsity = F)
+getHet(CountsMatrix, shrinkage = F, subtractSparsity = F)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
+
+\item{shrinkage}{Boolean flag on whether to use James-Stein type shrinkage estimator}
 
 \item{subtractSparsity}{Subtract information due to count sparsity}
 }

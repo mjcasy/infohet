@@ -8,6 +8,7 @@ simulateHom(
   CountsMatrix,
   NumTrials = 50,
   SimStep = 0.2,
+  shrinkage = F,
   Spline = T,
   DepthAdjusted = T,
   subtractSparsity = F
@@ -19,6 +20,8 @@ simulateHom(
 \item{NumTrials}{Number of trials of simulation}
 
 \item{SimStep}{Step size, in log10 counts, between number of counts simulated}
+
+\item{shrinkage}{Boolean flag on whether to use James-Stein type shrinkage estimator}
 
 \item{Spline}{Logical flag for whether to simulate each gene directly or infer Het from splining}
 

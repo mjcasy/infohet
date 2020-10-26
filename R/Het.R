@@ -3,6 +3,7 @@
 #' Calculates Het, the information encoded in heterogeneity, in a gene-wise manner
 #'
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
+#' @param shrinkage Boolean flag on whether to use James-Stein type shrinkage estimator
 #' @param subtractSparsity Subtract information due to count sparsity
 #'
 #' @return Numeric vector of gene-wise Het
@@ -18,7 +19,7 @@
 #'                                x = c(1,1,1))
 #' Het <-  getHet(CountsMatrix = Counts)
 #'
-getHet <- function(CountsMatrix, subtractSparsity = F) {
+getHet <- function(CountsMatrix, shrinkage = F, subtractSparsity = F) {
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
@@ -28,10 +29,17 @@ getHet <- function(CountsMatrix, subtractSparsity = F) {
   Indices <- length(transposeCounts@p)-1
   Het <- vector("numeric", length(Indices))
 
-  for (ind in 1:Indices) {
-    count <- transposeCounts@x[(transposeCounts@p[ind]+1) : transposeCounts@p[ind+1]]
-    freq <- count / Total[ind]
-    Het[ind] <- t(freq) %*% log2(N*freq)
+  if(shrinkage == T) {
+    for (ind in 1:Indices) {
+      freqshrink <- getFreqShrink(transposeCounts, ind, N, Total)
+      Het[ind] <- t(freqshrink) %*% log2(N*freqshrink)
+    }
+  } else if(shrinkage == F) {
+    for (ind in 1:Indices) {
+      count <- transposeCounts@x[(transposeCounts@p[ind]+1) : transposeCounts@p[ind+1]]
+      freq <- count / Total[ind]
+      Het[ind] <- t(freq) %*% log2(N*freq)
+    }
   }
 
   Het[is.infinite(Het)] <- 0
@@ -89,6 +97,7 @@ subtractHetSparse <- function(CountsMatrix, Het) {
 #'
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param Groups Factor of cell identities
+#' @param shrinkage Boolean flag on whether to use James-Stein type shrinkage estimator
 #'
 #' @return Numeric vector of gene-wise HetMacro
 #' @export
@@ -99,7 +108,7 @@ subtractHetSparse <- function(CountsMatrix, Het) {
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' getHetMacro(Counts, Ident)
-getHetMacro <- function(CountsMatrix, Groups) {
+getHetMacro <- function(CountsMatrix, Groups, shrinkage = F) {
 
   if(length(Groups) != ncol(CountsMatrix)){
     stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
@@ -110,20 +119,36 @@ getHetMacro <- function(CountsMatrix, Groups) {
 
   Ng <- as.vector(table(Groups))
 
-  groupedCounts <- groupCounts(CountsMatrix, Groups)
+  if(shrinkage == T){
+    transposeCounts <- Matrix::t(CountsMatrix)
 
-  groupedCounts <- Matrix::t(groupedCounts)
+    Indices <- length(transposeCounts@p)-1
+    Het <- vector("numeric", length(Indices))
 
-  Indices <- length(groupedCounts@p)-1
-  Het <- vector("numeric", length(Indices))
+    for (ind in 1:Indices) {
+      freqshrink <- getFreqShrink(transposeCounts, ind, N, Total)
+      groupedfreqshrink <- tapply(freqshrink, Groups, sum)
 
-  for (ind in 1:Indices) {
-    count <- groupedCounts@x[(groupedCounts@p[ind]+1) : groupedCounts@p[ind+1]]
-    freq <- count / Total[ind]
+      NonZero <- which(groupedfreqshrink != 0)
 
-    NonZero <- 1 + groupedCounts@i[(groupedCounts@p[ind]+1) : groupedCounts@p[ind+1]]
+      Het[ind] <- t(groupedfreqshrink[NonZero]) %*% log2(N*groupedfreqshrink[NonZero] /  Ng[NonZero])
+    }
+  } else if(shrinkage == F){
+    groupedCounts <- groupCounts(CountsMatrix, Groups)
 
-    Het[ind] <- t(freq) %*% log2(N*freq /  Ng[NonZero])
+    groupedCounts <- Matrix::t(groupedCounts)
+
+    Indices <- length(groupedCounts@p)-1
+    Het <- vector("numeric", length(Indices))
+
+    for (ind in 1:Indices) {
+      count <- groupedCounts@x[(groupedCounts@p[ind]+1) : groupedCounts@p[ind+1]]
+      freq <- count / Total[ind]
+
+      NonZero <- 1 + groupedCounts@i[(groupedCounts@p[ind]+1) : groupedCounts@p[ind+1]]
+
+      Het[ind] <- t(freq) %*% log2(N*freq /  Ng[NonZero])
+    }
   }
 
   Het[is.infinite(Het)] <- 0
@@ -140,6 +165,7 @@ getHetMacro <- function(CountsMatrix, Groups) {
 #'
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param Groups Factor of cell identities
+#' @param shrinkage Boolean flag on whether to use James-Stein type shrinkage estimator
 #' @param full Logical flag for whether to return just HetMicro or full Het by group
 #' @param subtractSparsity Subtract information due to count sparsity. If full also TRUE, also applies to each group.
 #' @param components Logical flag for whether to return just HetMicro or additive components of HetMicro by group
@@ -153,7 +179,7 @@ getHetMacro <- function(CountsMatrix, Groups) {
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' getHetMicro(Counts, Ident)
-getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F, components = F) {
+getHetMicro <- function(CountsMatrix, Groups, shrinkage = F, full = F, subtractSparsity = F, components = F) {
 
   if(length(Groups) != ncol(CountsMatrix)){
     stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
@@ -169,45 +195,112 @@ getHetMicro <- function(CountsMatrix, Groups, full = F, subtractSparsity = F, co
   types <- levels(Groups)
   I <- length(types)
 
-  CountsList <- list()
+  if(shrinkage == T){
+    Ng <- as.vector(table(Groups))
+    names(Ng) <- names(table(Groups))
 
-  for (i in 1:I) {
-    CountsList[[i]] <- CountsMatrix[,Groups == types[i], drop = FALSE]
-  }
+    transposeCounts <- Matrix::t(CountsMatrix)
 
-  HetList <- lapply(X = CountsList, FUN = getHet, subtractSparsity = F)
+    Indices <- length(transposeCounts@p)-1
+    HetMicro <- matrix(nrow =  Indices, ncol = I, dimnames = list(rownames(CountsMatrix), types))
+    fullMicro <- matrix(nrow =  Indices, ncol = I, dimnames = list(rownames(CountsMatrix), types))
 
-  HetMicro <- matrix(unlist(HetList), nrow = nrow(CountsMatrix), ncol = I)
-  HetMicro[is.na(HetMicro)] <- 0
-  HetMicro[is.infinite(HetMicro)] <- 0
-  colnames(HetMicro) <- types
-  rownames(HetMicro) <- rownames(CountsMatrix)
-
-  groupedCounts <- groupCounts(CountsMatrix, Groups)
-
-  FreqMatrix <- groupedCounts * Total^-1
-
-  Components <- FreqMatrix * HetMicro
-
-  Overall <- Matrix::rowSums(Components)
-
-  if(subtractSparsity == T){
-    for(i in 1:ncol(HetMicro)){
-      HetMicro[,i] <- subtractHetSparse(CountsMatrix = CountsList[[i]], Het = HetMicro[,i])
+    for (ind in 1:Indices) {
+      freqshrink <- getFreqShrink(transposeCounts, ind, N, Total)
+      groupedfreqshrink <- tapply(freqshrink, Groups, sum)
+      typeHet <- vector(mode = "numeric", length = I)
+      names(typeHet) <- types
+      for(type in types){
+        freq <- freqshrink[Groups == type] / groupedfreqshrink[type]
+        typeHet[type] <- t(freq) %*% log2(Ng[type]*freq)
+      }
+      fullMicro[ind,] <- typeHet
+      HetMicro[ind,] <- groupedfreqshrink[types] * typeHet
     }
-    Overall <- subtractHetSparse(CountsMatrix, Overall)
-  }
 
-  if(full == F & components == F){
-    HetMicro <- Overall
-    names(HetMicro) <- rownames(CountsMatrix)
-  } else if(full == T){
-    HetMicro <- cbind(HetMicro, Overall)
+    if(full == F & components == F){
+      HetMicro <- rowSums(HetMicro)
+    } else if(full == T){
+      HetMicro <- fullMicro
+    }
+
+  } else if(shrinkage == F){
+    CountsList <- list()
+
+    for (i in 1:I) {
+      CountsList[[i]] <- CountsMatrix[,Groups == types[i], drop = FALSE]
+    }
+
+    HetList <- lapply(X = CountsList, FUN = getHet, subtractSparsity = F)
+
+    HetMicro <- matrix(unlist(HetList), nrow = nrow(CountsMatrix), ncol = I)
+    HetMicro[is.na(HetMicro)] <- 0
+    HetMicro[is.infinite(HetMicro)] <- 0
+    colnames(HetMicro) <- types
     rownames(HetMicro) <- rownames(CountsMatrix)
-  } else if(components == T){
-    HetMicro <- cbind(as.matrix(Components), Overall)
-    rownames(HetMicro) <- rownames(CountsMatrix)
+
+    groupedCounts <- groupCounts(CountsMatrix, Groups)
+
+    FreqMatrix <- groupedCounts * Total^-1
+
+    Components <- FreqMatrix * HetMicro
+
+    Overall <- Matrix::rowSums(Components)
+
+    if(subtractSparsity == T){
+      for(i in 1:ncol(HetMicro)){
+        HetMicro[,i] <- subtractHetSparse(CountsMatrix = CountsList[[i]], Het = HetMicro[,i])
+      }
+      Overall <- subtractHetSparse(CountsMatrix, Overall)
+    }
+
+    if(full == F & components == F){
+      HetMicro <- Overall
+      names(HetMicro) <- rownames(CountsMatrix)
+    } else if(full == T){
+      HetMicro <- cbind(HetMicro, Overall)
+      rownames(HetMicro) <- rownames(CountsMatrix)
+    } else if(components == T){
+      HetMicro <- cbind(as.matrix(Components), Overall)
+      rownames(HetMicro) <- rownames(CountsMatrix)
+    }
   }
 
   HetMicro
+}
+
+
+
+#' Calculate cell frequencies for shrinakge estimator
+#'
+#' @param transposeCounts Transposed sparse count matrix
+#' @param ind Integer indicating chosne gene (row number in count matrix)
+#' @param N Number of cells
+#' @param Total Integer of total counts per cell
+#'
+#' @return Numeric vector of shrinkage cell frequencies
+#' @export
+#'
+#' @examples
+#' Counts <- Matrix::sparseMatrix(i = c(2,3,3),
+#'                                j = c(1,1,2),
+#'                                x = c(1,1,1))
+#' N <- ncol(Counts)
+#' Total <- Matrix::rowSums(Counts)
+#' getFreqShrink(Matrix::t(Counts), 1, N, Total)
+#'
+getFreqShrink <- function(transposeCounts, ind, N, Total){
+  tk <- rep(1/N, N)
+  tkadj <- tk
+  count <- transposeCounts@x[(transposeCounts@p[ind]+1) : transposeCounts@p[ind+1]]
+  elements <- transposeCounts@i[(transposeCounts@p[ind]+1) : transposeCounts@p[ind+1]]+1
+  freq <- count / Total[ind]
+  num <- 1 - sum(freq^2)
+  tkadj[elements] <- tkadj[elements] - freq
+  den <- (sum(count) - 1)*sum(tkadj^2)
+  lambda <- num/den
+  lambda[lambda > 1] <- 1
+  freqshrink <- lambda*tk
+  freqshrink[elements]  <- freqshrink[elements] + (1 - lambda)*freq
+  freqshrink
 }

@@ -7,6 +7,7 @@
 getHetMicro(
   CountsMatrix,
   Groups,
+  shrinkage = F,
   full = F,
   subtractSparsity = F,
   components = F
@@ -16,6 +17,8 @@ getHetMicro(
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
 \item{Groups}{Factor of cell identities}
+
+\item{shrinkage}{Boolean flag on whether to use James-Stein type shrinkage estimator}
 
 \item{full}{Logical flag for whether to return just HetMicro or full Het by group}
 
