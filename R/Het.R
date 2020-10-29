@@ -304,3 +304,43 @@ getFreqShrink <- function(transposeCounts, ind, N, Total){
   freqshrink[elements]  <- freqshrink[elements] + (1 - lambda)*freq
   freqshrink
 }
+
+
+#' Calculate regularised total information explained
+#'
+#' Calculates total macro-heterogeneity regularised by the entropy of the group structure
+#'
+#' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
+#' @param Groups Factor of cell identities
+#' @param shrinkage Boolean flag on whether to use James-Stein type shrinkage estimator
+#' @param lambda Scale factor of regularisation; defaults to ratio of total information obtained to theoretical maximum
+#'
+#' @return Regularised total information explained
+#' @export
+#'
+#' @examples
+#' Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
+#'                                j = c(1,2,3,4,1,2,3),
+#'                                x = c(2,2,2,2,3,3,2))
+#' Ident <- factor(c("1", "1", "2", "2"))
+#' regularisedTotalHetMacro(Counts, Ident)
+regularisedTotalHetMacro <- function(CountsMatrix, Groups, shrinkage = T, lambda){
+
+  HetMacro <- getHetMacro(CountsMatrix, Groups, shrinkage = shrinkage)
+
+  N <- ncol(CountsMatrix)
+  g <- nrow(CountsMatrix)
+
+  fS <- as.vector(table(Groups)) / N
+  HS <- as.numeric(-1 * t(fS) %*% log2(fS))
+
+  if(missing(lambda)){
+    Het <- getHet(CountsMatrix, shrinkage = shrinkage)
+    lambda <- sum(Het) / (g*log2(N))
+  }
+
+  rI_S <- sum(HetMacro) - lambda*g*HS
+
+  rI_S
+
+}
