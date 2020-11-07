@@ -19,7 +19,7 @@
 #'                                x = c(1,1,1))
 #' Het <-  getHet(CountsMatrix = Counts)
 #'
-getHet <- function(CountsMatrix, shrinkage = F, subtractSparsity = F) {
+getHet <- function(CountsMatrix, shrinkage = T, subtractSparsity = F) {
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
@@ -32,7 +32,9 @@ getHet <- function(CountsMatrix, shrinkage = F, subtractSparsity = F) {
   if(shrinkage == T) {
     for (ind in 1:Indices) {
       freqshrink <- getFreqShrink(transposeCounts, ind, N, Total)
-      Het[ind] <- t(freqshrink) %*% log2(N*freqshrink)
+      Log2Nfreq <- log2(N*freqshrink)
+      Log2Nfreq[Log2Nfreq == -Inf] <- 0
+      Het[ind] <- t(freqshrink) %*% Log2Nfreq
     }
   } else if(shrinkage == F) {
     for (ind in 1:Indices) {
@@ -108,7 +110,7 @@ subtractHetSparse <- function(CountsMatrix, Het) {
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' getHetMacro(Counts, Ident)
-getHetMacro <- function(CountsMatrix, Groups, shrinkage = F) {
+getHetMacro <- function(CountsMatrix, Groups, shrinkage = T) {
 
   if(length(Groups) != ncol(CountsMatrix)){
     stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
@@ -179,7 +181,7 @@ getHetMacro <- function(CountsMatrix, Groups, shrinkage = F) {
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' getHetMicro(Counts, Ident)
-getHetMicro <- function(CountsMatrix, Groups, shrinkage = F, full = F, subtractSparsity = F, components = F) {
+getHetMicro <- function(CountsMatrix, Groups, shrinkage = T, full = F, subtractSparsity = F, components = F) {
 
   if(length(Groups) != ncol(CountsMatrix)){
     stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
