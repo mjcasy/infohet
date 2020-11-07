@@ -276,7 +276,7 @@ getHetMicro <- function(CountsMatrix, Groups, shrinkage = T, full = F, subtractS
 #' Calculate cell frequencies for shrinakge estimator
 #'
 #' @param transposeCounts Transposed sparse count matrix
-#' @param ind Integer indicating chosne gene (row number in count matrix)
+#' @param ind Integer indicating chosen gene (row number in count matrix)
 #' @param N Number of cells
 #' @param Total Integer of total counts per cell
 #'
