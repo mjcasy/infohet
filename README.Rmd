@@ -21,6 +21,13 @@ knitr::opts_chunk$set(
 
 Package for the quantification of the information content of single-cell RNA-sequencing data-sets, and how much of this information has been explained by clustering. Based on the quantification of information in heterogeneity (infohet). Preprint - https://www.biorxiv.org/content/10.1101/2020.10.01.322255v1
 
+The package can be used for the calculation of several information theoretic quantities, most importantly:
+
+1. Het - gene-wise measure of information obtained
+2. Net Information - measure of the information explained by a given clustering, penalised by the complexity of the clustering
+
+Het and net information can be used for feature selection and clustering evaluation, as presented below:
+
 ## Installation
 
 ``` r
@@ -30,25 +37,17 @@ devtools::install_github("mjcasy/infohet")
 
 ## Workflow
 
-We will use a dataset with a known cluster structure for this example. ScMixology (https://github.com/LuyiTian/sc_mixology) has several datasets that consist of mixtures of cancer cell lines, enabling the identity of each cell to be identified by genotyping. We will be using the mixture of five cell lines (sincell_with_class_5cl.RDat).
+We will use a dataset with a known cluster structure for this example. ScMixology (https://github.com/LuyiTian/sc_mixology) has several datasets that consist of mixtures of cancer cell lines, enabling the identity of each cell to be identified by genotyping. We will be using the mixture of three cell lines (sincell_with_class.RDat).
 
 Setup. Load in Data and filter low expressing genes (less than 100 transcripts total). 
 
 ```{r}
 library(infohet)
 library(RColorBrewer)
+library(Matrix)
 
-# CountsMatrix
-load("../Data/Tian2018/CountsMatrix")
-
-infoThreshold <- 0.5
-minTotal <- 100
-
-Total <- Matrix::rowSums(CountsMatrix)
-if(any(Total < minTotal)){
-   CountsMatrix <- CountsMatrix[-which(Total < minTotal),]
-   Total <- Total[-which(Total < minTotal)]
-}
+load("../Data/Tian2018/ThreeClasses/CountsMatrix")
+CountsMatrix <- CountsMatrix[rowSums(CountsMatrix) > 100,]
 ```
 
 
@@ -56,143 +55,86 @@ if(any(Total < minTotal)){
 
 We can determine the amount of information in the heterogeneity of each genes expression pattern. This is the number of bits required to encode the deviation of observed gene expression from homogeneity, i.e. equal gene expression in each cell.
 
-Some amount of information is expected from technical sources, so we simulate the effects of sparsity, cellular count depth variation and stochastic fluctuations. 
-
-We then select those genes with at least some set amount (here 0.5 bits) more information than expected from technical effects. These are the highly informative genes.
+We then select highly informative genes by thresholding, choosing those genes with more than 1 bit of information.
 
 ```{r}
-Het <- getHet(CountsMatrix)
+Information <- getHet(CountsMatrix)
 
-nullHet <- simulateHom(CountsMatrix)
-
-HighlyInformative <- Het > nullHet + infoThreshold
+HighlyInformative <- Information > 1
 
 N <- CountsMatrix@Dim[2]
-Mean_nUMI <- Total / N
+Mean <- log10(rowMeans(CountsMatrix))
 
-HetDataFrame <- data.frame(log10(Mean_nUMI), Het, nullHet)
-colnames(HetDataFrame) <- c("log10_Mean_nUMI", "Unexplained_Information", "Null_Model")
+HetDataFrame <- data.frame(Mean, Information)
 
 ColourSelected <- brewer.pal(9, "Blues")[8]
 ColourNotSelected <- brewer.pal(9, "Blues")[4]
-Order <- order(HetDataFrame$log10_Mean_nUMI)
 
-with(HetDataFrame, plot(log10_Mean_nUMI, 
-                        Unexplained_Information,
-                        col = ifelse(HighlyInformative, ColourSelected, ColourNotSelected),
-                        ylim = c(0, log2(N)),
-                        pch = 20)
-     )
-lines(HetDataFrame$log10_Mean_nUMI[Order], HetDataFrame$Null_Model[Order], col = "red", lwd = 2)
+plot(HetDataFrame$Mean, 
+     HetDataFrame$Information,
+     col = ifelse(HighlyInformative, ColourSelected, ColourNotSelected),
+     ylim = c(0, log2(N)),
+     pch = 20)
+     
 ```
 
-### Cluster Quality Evaluation
+### Clustering Evaluation
 
 Information is additively decomposable based on a given clustering of cells into that information explained by the differential expression of a gene between clusters, and that which remains unexplained.
 
-Given the goal of clustering is to explain the heterogeneity in gene expression, and we can calculate the amount of information in heterogeneity that is explained by clustering, information is a natural measure for cluster evaluation.
+Given the goal of clustering is to explain the heterogeneity in gene expression, information explained is a natural measure for cluster evaluation.
 
-Using the known ground truth cluster structure of the scMixology data, we can carry out a gene-wise assessment of the information that remains unexplained. 
+Further, information is additive between independent sources. Taking each gene as independent, the total information explained by a given clustering can be found.
 
-More generally, if the ground truth clustering is not known, genes that retain a large amount of unexplained information are potentially interesting features for use in re/sub-clustering.
+Finally, note that information will never increase with increasing cluster number. We account for this increase by quantifying the amount of information required to encode a given cluster structure, $H(S)$ and penalizing clusterings accordingly. We can therefore calcuate the net information explained by a given clustering.
 
-```{r}
-# Identitiy
-load("../Data/Tian2018/Identity")
-
-Clustered_Unexplained_Information <- getHetMicro(CountsMatrix, Identity)
-HetDataFrame <- cbind(HetDataFrame, Clustered_Unexplained_Information)
-
-HighlyInformativeDecomp <- Clustered_Unexplained_Information > nullHet + infoThreshold
-
-with(HetDataFrame, plot(log10_Mean_nUMI, 
-                        Clustered_Unexplained_Information,
-                        col = ifelse(HighlyInformativeDecomp, ColourSelected, ColourNotSelected),
-                        ylim = c(0, log2(N)),
-                        pch = 20)
-     )
-lines(HetDataFrame$log10_Mean_nUMI[Order], HetDataFrame$Null_Model[Order], col = "red", lwd = 2)
-
-```
-
-Information is additive between independent sources. Taking each gene as independent, the total information left unexplained in the transcriptome can be found. 
-
-Given the goal of clustering is to identify a set of homogenous subpopulations, i.e. cell types, the chosen clustering should minimise the total amount of information left unexplained. 
-
-We can demonstrate the relationship between closeness to the ground truth (Rand Index) and information using K-means.
+Being a global measure of cluster quality, independent of cluster number, net information can serve as a powerful basis of hyperparameter selection. For instance, determining that there are three discrete cellular identities in the scMixology data set.
 
 ```{r, eval = F}
 library(Seurat)
-require(fossil)
+
+load("../Data/Tian2018/ThreeClasses/Identity")
 
 SeuObj <- Seurat::CreateSeuratObject(CountsMatrix)
 SeuObj <- Seurat::SCTransform(SeuObj)
 Data <- SeuObj@assays$SCT@scale.data
 
-Trials <- 1000
-
-RandInd <- vector("numeric", Trials)
-InformationUnexplained <- vector("numeric", Trials)
-
-for(i in 1:Trials){
-  KM <- kmeans(t(Data), 5)
-  RandInd[i] <- fossil::rand.index(KM$cluster, as.numeric(Identity))
-  
-  HetMicro <- getHetMicro(CountsMatrix, as.factor(KM$cluster))
-  InformationUnexplained[i] <- sum(HetMicro) 
-}
+SeuObj <- RunPCA(SeuObj, verbose = FALSE)
+SeuObj <- FindNeighbors(SeuObj, dims = 1:30, verbose = FALSE)
 ```
-
-```{r,include=F}
-TotalHet <- sum(HetDataFrame$Unexplained_Information)
-load("../Entropy/maximum_entropy/Figures/TianKmeans")
-KmeansFiveClusters[,2] <- TotalHet - KmeansFiveClusters[,2]
-```
-
-```{r, echo = FALSE}
-plot(KmeansFiveClusters, ylab = "Total Information Unexplained", xlab = "Rand Index")
-```
-
-Note that, all else being equal, information will never decrease with increasing cluster number. There is therefore a trade-off - the optimal clustering is that which leaves the least information unexplained in the fewest clusters. This can be assessed by an elbow analysis, shown below using the Seurat (v3) clustering pipeline.
 
 ```{r, eval = F}
-SeuObj <- RunPCA(SeuObj, verbose = FALSE)
-
-SeuObj <- FindNeighbors(SeuObj, dims = 1:30, verbose = FALSE)
+Resolutions <- c(seq(0.0001, 0.001, 0.0001), seq(0.002, 0.01, 0.001), seq(0.02, 0.2, 0.01), seq(0.3, 1, 0.1))
 
 NumClusters <- c()
-InformationUnexplained <- c()
-Resolutions <- c(seq(0.0001, 0.001, 0.0001), seq(0.002, 0.01, 0.001), seq(0.02, 0.2, 0.01), seq(0.3, 1, 0.1))
+NetInformation <- c()
 
 for(i in 1:length(Resolutions)){
   Idents(SeuObj) <- NA
+  
   SeuObj <- FindClusters(SeuObj, verbose = FALSE, resolution = Resolutions[i])
   
   Identity <- Idents(SeuObj)
   
-  HetMicro <- getHetMicro(CountsMatrix, Identity)
+  NetInformation[i] <- netInformation(CountsMatrix, Identity, Information)
   
   NumClusters[i] <- length(levels(Identity))
-  InformationUnexplained[i] <- sum(HetMicro) 
 }
 
-Elbow <- cbind(Resolutions, NumClusters, InformationUnexplained)
+Elbow <- cbind(Resolutions, NumClusters, NetInformation)
 ```
 
 ```{r, include = FALSE}
-load("../Entropy/maximum_entropy/Figures/TianElbow")
-Elbow[,3] <- TotalHet - Elbow[,3]
-```
-
-Elbow Plot of total information explained by clustering against resolution hyperparameter and cluster number
-
-```{r, echo = FALSE}
-plot(Elbow[,1], Elbow[,3], ylab = "Total Information Unexplained", xlab = "Resolution", type = "l")
+load("../Entropy/TimeSeries/Analysis/TianTCElbow")
 ```
 
 ```{r, echo = FALSE}
-plot(Elbow[,2], Elbow[,3], ylab = "Total Information Unexplained", xlab = "Number of Clusters", type = "l")
-abline(v = 5, col = "red")
+plot(Elbow[,1], Elbow[,3], ylab = "Net Information Explained", xlab = "Resolution", type = "l")
+```
+
+```{r, echo = FALSE}
+plot(Elbow[,2], Elbow[,3], ylab = "Net Information Explained", xlab = "Number of Clusters", type = "l")
+abline(v = 3, col = "red")
 ```
 
 
