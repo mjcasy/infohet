@@ -114,10 +114,6 @@ getHetMicro <- function(CountsMatrix, Groups) {
     stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
   }
 
-  if(sum(full, components) == 2){
-    stop("Both components and full should not be TRUE")
-  }
-
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
 
@@ -130,7 +126,8 @@ getHetMicro <- function(CountsMatrix, Groups) {
   transposeCounts <- Matrix::t(CountsMatrix)
 
   Indices <- length(transposeCounts@p)-1
-  HetMicro <- matrix(nrow =  Indices, ncol = I, dimnames = list(rownames(CountsMatrix), types))
+  HetMicro <- vector("numeric", length =  nrow(CountsMatrix))
+  names(HetMicro) <- rownames(CountsMatrix)
 
   for (ind in 1:Indices) {
     freqshrink <- getFreqShrink(transposeCounts, ind, N, Total)
@@ -141,48 +138,11 @@ getHetMicro <- function(CountsMatrix, Groups) {
       freq <- freqshrink[Groups == type] / groupedfreqshrink[type]
       typeHet[type] <- t(freq) %*% log2(Ng[type]*freq)
     }
-    HetMicro[ind,] <- groupedfreqshrink[types] * typeHet
+    HetMicro[ind] <- groupedfreqshrink[types] %*% typeHet
   }
 
   HetMicro
 }
-
-
-
-#' Calculate cell frequencies for shrinakge estimator
-#'
-#' @param transposeCounts Transposed sparse count matrix
-#' @param ind Integer indicating chosen gene (row number in count matrix)
-#' @param N Number of cells
-#' @param Total Integer of total counts per cell
-#'
-#' @return Numeric vector of shrinkage cell frequencies
-#' @export
-#'
-#' @examples
-#' Counts <- Matrix::sparseMatrix(i = c(2,3,3),
-#'                                j = c(1,1,2),
-#'                                x = c(1,1,1))
-#' N <- ncol(Counts)
-#' Total <- Matrix::rowSums(Counts)
-#' getFreqShrink(Matrix::t(Counts), 1, N, Total)
-#'
-getFreqShrink <- function(transposeCounts, ind, N, Total){
-  tk <- rep(1/N, N)
-  tkadj <- tk
-  count <- transposeCounts@x[(transposeCounts@p[ind]+1) : transposeCounts@p[ind+1]]
-  elements <- transposeCounts@i[(transposeCounts@p[ind]+1) : transposeCounts@p[ind+1]]+1
-  freq <- count / Total[ind]
-  num <- 1 - sum(freq^2)
-  tkadj[elements] <- tkadj[elements] - freq
-  den <- (sum(count) - 1)*sum(tkadj^2)
-  lambda <- num/den
-  lambda[lambda > 1] <- 1
-  freqshrink <- lambda*tk
-  freqshrink[elements]  <- freqshrink[elements] + (1 - lambda)*freq
-  freqshrink
-}
-
 
 #' Calculate net total information explained
 #'

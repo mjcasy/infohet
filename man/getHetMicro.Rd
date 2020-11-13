@@ -4,27 +4,12 @@
 \alias{getHetMicro}
 \title{Calaculate Information not in Model}
 \usage{
-getHetMicro(
-  CountsMatrix,
-  Groups,
-  shrinkage = T,
-  full = F,
-  subtractSparsity = F,
-  components = F
-)
+getHetMicro(CountsMatrix, Groups)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
 \item{Groups}{Factor of cell identities}
-
-\item{shrinkage}{Boolean flag on whether to use James-Stein type shrinkage estimator}
-
-\item{full}{Logical flag for whether to return just HetMicro or full Het by group}
-
-\item{subtractSparsity}{Subtract information due to count sparsity. If full also TRUE, also applies to each group.}
-
-\item{components}{Logical flag for whether to return just HetMicro or additive components of HetMicro by group}
 }
 \value{
 Numeric vector of gene-wise HetMicro

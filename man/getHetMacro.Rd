@@ -4,14 +4,12 @@
 \alias{getHetMacro}
 \title{Calaculate Information in Model}
 \usage{
-getHetMacro(CountsMatrix, Groups, shrinkage = T)
+getHetMacro(CountsMatrix, Groups)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
 \item{Groups}{Factor of cell identities}
-
-\item{shrinkage}{Boolean flag on whether to use James-Stein type shrinkage estimator}
 }
 \value{
 Numeric vector of gene-wise HetMacro

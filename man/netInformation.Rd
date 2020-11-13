@@ -4,7 +4,7 @@
 \alias{netInformation}
 \title{Calculate net total information explained}
 \usage{
-netInformation(CountsMatrix, Groups, Het, shrinkage = T, lambda)
+netInformation(CountsMatrix, Groups, Het, lambda)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
@@ -12,8 +12,6 @@ netInformation(CountsMatrix, Groups, Het, shrinkage = T, lambda)
 \item{Groups}{Factor of cell identities}
 
 \item{Het}{Vector of feature Het values}
-
-\item{shrinkage}{Boolean flag on whether to use James-Stein type shrinkage estimator}
 
 \item{lambda}{Scale factor of regularisation; defaults to ratio of total information obtained to theoretical maximum}
 }
