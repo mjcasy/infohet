@@ -7,7 +7,7 @@
 getHetMicro(
   CountsMatrix,
   Groups,
-  shrinkage = F,
+  shrinkage = T,
   full = F,
   subtractSparsity = F,
   components = F

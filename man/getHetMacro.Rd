@@ -4,7 +4,7 @@
 \alias{getHetMacro}
 \title{Calaculate Information in Model}
 \usage{
-getHetMacro(CountsMatrix, Groups, shrinkage = F)
+getHetMacro(CountsMatrix, Groups, shrinkage = T)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}

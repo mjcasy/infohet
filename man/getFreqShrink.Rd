@@ -9,7 +9,7 @@ getFreqShrink(transposeCounts, ind, N, Total)
 \arguments{
 \item{transposeCounts}{Transposed sparse count matrix}
 
-\item{ind}{Integer indicating chosne gene (row number in count matrix)}
+\item{ind}{Integer indicating chosen gene (row number in count matrix)}
 
 \item{N}{Number of cells}
 
