@@ -39,7 +39,7 @@ devtools::install_github("mjcasy/infohet")
 
 We will use a dataset with a known cluster structure for this example. ScMixology (https://github.com/LuyiTian/sc_mixology) has several datasets that consist of mixtures of cancer cell lines, enabling the identity of each cell to be identified by genotyping. We will be using the mixture of three cell lines (sincell_with_class.RDat).
 
-Setup. Load in Data and filter low expressing genes (less than 100 transcripts total). 
+Setup. Load in Data and filter low expressing genes (less than 100 transcripts total).  Note that infohet works off of the sparse matrix format ("dgCMatrix"). This is the same object type as used in the popular Seurat package, and a normal numeric matrix can be converted to the sparse format using the Seurat function as.sparse(). 
 
 ```{r}
 library(infohet)

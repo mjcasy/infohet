@@ -41,7 +41,10 @@ identity of each cell to be identified by genotyping. We will be using
 the mixture of three cell lines (sincell\_with\_class.RDat).
 
 Setup. Load in Data and filter low expressing genes (less than 100
-transcripts total).
+transcripts total). Note that infohet works off of the sparse matrix
+format (“dgCMatrix”). This is the same object type as used in the
+popular Seurat package, and a normal numeric matrix can be converted to
+the sparse format using the Seurat function as.sparse().
 
 ``` r
 library(infohet)
