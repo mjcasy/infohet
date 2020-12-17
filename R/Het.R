@@ -168,7 +168,7 @@ getHetMicro <- function(CountsMatrix, Groups, base = 2) {
 #' netInformation(Counts, Ident)
 netInformation <- function(CountsMatrix, Groups, Het, lambda, base = 2){
 
-  HetMacro <- getHetMacro(CountsMatrix, Groups)
+  HetMacro <- getHetMacro(CountsMatrix, Groups, base = base)
 
   N <- ncol(CountsMatrix)
   g <- nrow(CountsMatrix)
