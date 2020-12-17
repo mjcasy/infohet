@@ -4,7 +4,7 @@
 \alias{netInformation}
 \title{Calculate net total information explained}
 \usage{
-netInformation(CountsMatrix, Groups, Het, lambda)
+netInformation(CountsMatrix, Groups, Het, lambda, base = 2)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
@@ -14,6 +14,8 @@ netInformation(CountsMatrix, Groups, Het, lambda)
 \item{Het}{Vector of feature Het values}
 
 \item{lambda}{Scale factor of regularisation; defaults to ratio of total information obtained to theoretical maximum}
+
+\item{base}{base of log}
 }
 \value{
 Net total information explained

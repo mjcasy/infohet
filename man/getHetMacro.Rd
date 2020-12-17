@@ -4,12 +4,14 @@
 \alias{getHetMacro}
 \title{Calaculate Information in Model}
 \usage{
-getHetMacro(CountsMatrix, Groups)
+getHetMacro(CountsMatrix, Groups, base = 2)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
 
 \item{Groups}{Factor of cell identities}
+
+\item{base}{base of log}
 }
 \value{
 Numeric vector of gene-wise HetMacro

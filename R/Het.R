@@ -3,6 +3,7 @@
 #' Calculates Het, the information encoded in heterogeneity, in a gene-wise manner
 #'
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
+#' @param base base of log
 #'
 #' @return Numeric vector of gene-wise Het
 #'
@@ -17,7 +18,7 @@
 #'                                x = c(1,1,1))
 #' Het <-  getHet(CountsMatrix = Counts)
 #'
-getHet <- function(CountsMatrix) {
+getHet <- function(CountsMatrix, base = 2) {
 
   Total <- Matrix::rowSums(CountsMatrix)
   N <- ncol(CountsMatrix)
@@ -29,7 +30,7 @@ getHet <- function(CountsMatrix) {
 
   for (ind in 1:Indices) {
     freqshrink <- getFreqShrink(transposeCounts, ind, N, Total)
-    Log2Nfreq <- log2(N*freqshrink)
+    Log2Nfreq <- log(N*freqshrink, base = base)
     Log2Nfreq[Log2Nfreq == -Inf] <- 0
     Het[ind] <- t(freqshrink) %*% Log2Nfreq
   }
@@ -49,6 +50,7 @@ getHet <- function(CountsMatrix) {
 #'
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param Groups Factor of cell identities
+#' @param base base of log
 #'
 #' @return Numeric vector of gene-wise HetMacro
 #' @export
@@ -59,7 +61,7 @@ getHet <- function(CountsMatrix) {
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' getHetMacro(Counts, Ident)
-getHetMacro <- function(CountsMatrix, Groups) {
+getHetMacro <- function(CountsMatrix, Groups, base = 2) {
 
   if(length(Groups) != ncol(CountsMatrix)){
     stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
@@ -81,7 +83,7 @@ getHetMacro <- function(CountsMatrix, Groups) {
 
     NonZero <- which(groupedfreqshrink != 0)
 
-    Het[ind] <- t(groupedfreqshrink[NonZero]) %*% log2(N*groupedfreqshrink[NonZero] /  Ng[NonZero])
+    Het[ind] <- t(groupedfreqshrink[NonZero]) %*% log(N*groupedfreqshrink[NonZero] /  Ng[NonZero], base = base)
   }
 
   Het[is.infinite(Het)] <- 0
@@ -98,6 +100,7 @@ getHetMacro <- function(CountsMatrix, Groups) {
 #'
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param Groups Factor of cell identities
+#' @param base base of log
 #'
 #' @return Numeric vector of gene-wise HetMicro
 #' @export
@@ -108,7 +111,7 @@ getHetMacro <- function(CountsMatrix, Groups) {
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' getHetMicro(Counts, Ident)
-getHetMicro <- function(CountsMatrix, Groups) {
+getHetMicro <- function(CountsMatrix, Groups, base = 2) {
 
   if(length(Groups) != ncol(CountsMatrix)){
     stop("Inconsistent number of cells between objects:\n\tlength(Groups) != ncol(CountsMatrix)")
@@ -136,7 +139,7 @@ getHetMicro <- function(CountsMatrix, Groups) {
     names(typeHet) <- types
     for(type in types){
       freq <- freqshrink[Groups == type] / groupedfreqshrink[type]
-      typeHet[type] <- t(freq) %*% log2(Ng[type]*freq)
+      typeHet[type] <- t(freq) %*% log(Ng[type]*freq, base = base)
     }
     HetMicro[ind] <- groupedfreqshrink[types] %*% typeHet
   }
@@ -152,6 +155,7 @@ getHetMicro <- function(CountsMatrix, Groups) {
 #' @param Groups Factor of cell identities
 #' @param Het Vector of feature Het values
 #' @param lambda Scale factor of regularisation; defaults to ratio of total information obtained to theoretical maximum
+#' @param base base of log
 #'
 #' @return Net total information explained
 #' @export
@@ -162,7 +166,7 @@ getHetMicro <- function(CountsMatrix, Groups) {
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' netInformation(Counts, Ident)
-netInformation <- function(CountsMatrix, Groups, Het, lambda){
+netInformation <- function(CountsMatrix, Groups, Het, lambda, base = 2){
 
   HetMacro <- getHetMacro(CountsMatrix, Groups)
 
@@ -170,14 +174,14 @@ netInformation <- function(CountsMatrix, Groups, Het, lambda){
   g <- nrow(CountsMatrix)
 
   fS <- as.vector(table(Groups)) / N
-  HS <- as.numeric(-1 * t(fS) %*% log2(fS))
+  HS <- as.numeric(-1 * t(fS) %*% log(fS, base = base))
 
   if(missing(lambda)){
     if(missing(Het)){
-      Het <- getHet(CountsMatrix)
+      Het <- getHet(CountsMatrix, base = base)
     }
     stopifnot(length(Het) == length(HetMacro))
-    lambda <- sum(Het) / log2(N)
+    lambda <- sum(Het) / log(N, base = base)
   }
 
   nI_S <- sum(HetMacro) - lambda*HS

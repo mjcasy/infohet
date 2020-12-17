@@ -4,10 +4,12 @@
 \alias{getHet}
 \title{Information in Heterogeneity}
 \usage{
-getHet(CountsMatrix)
+getHet(CountsMatrix, base = 2)
 }
 \arguments{
 \item{CountsMatrix}{Feature x cell sparse counts matrix of class dgCMatrix}
+
+\item{base}{base of log}
 }
 \value{
 Numeric vector of gene-wise Het
