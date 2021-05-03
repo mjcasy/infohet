@@ -154,11 +154,18 @@ getHetMicro <- function(CountsMatrix, Groups, base = 2) {
 #' @param CountsMatrix Feature x cell sparse counts matrix of class dgCMatrix
 #' @param Groups Factor of cell identities
 #' @param Het Vector of feature Het values
-#' @param lambda Scale factor of regularisation; defaults to ratio of total information obtained to theoretical maximum
+#' @param lambdaMod Scale factor of regularisation; shoud be in the range 0 to 1
 #' @param base base of log
 #'
 #' @return Net total information explained
 #' @export
+#'
+#' @details The default regularisation assumes that most heterogeneity is going
+#' to be explained by differences between clusters. If there is substantial
+#' intra-cluster heterogeneity relative to inter-cluster differences, negative
+#' net information may be returned even for `good' clusterings. A lower
+#' lambdaMod value should be used in such cases, but not so low that the net
+#' information remains high/positive for excessive numbers of clusters.
 #'
 #' @examples
 #' Counts <- Matrix::sparseMatrix(i = c(1,1,1,1,2,2,2),
@@ -166,7 +173,11 @@ getHetMicro <- function(CountsMatrix, Groups, base = 2) {
 #'                                x = c(2,2,2,2,3,3,2))
 #' Ident <- factor(c("1", "1", "2", "2"))
 #' netInformation(Counts, Ident)
-netInformation <- function(CountsMatrix, Groups, Het, lambda, base = 2){
+netInformation <- function(CountsMatrix, Groups, Het, lambdaMod = 1, base = 2){
+
+  if(lambdaMod < 0 | lambdaMod > 1){
+    stop("lambdaMod should be between 0 and 1")
+  }
 
   HetMacro <- getHetMacro(CountsMatrix, Groups, base = base)
 
@@ -176,15 +187,13 @@ netInformation <- function(CountsMatrix, Groups, Het, lambda, base = 2){
   fS <- as.vector(table(Groups)) / N
   HS <- as.numeric(-1 * t(fS) %*% log(fS, base = base))
 
-  if(missing(lambda)){
-    if(missing(Het)){
-      Het <- getHet(CountsMatrix, base = base)
-    }
-    stopifnot(length(Het) == length(HetMacro))
-    lambda <- sum(Het) / log(N, base = base)
+  if(missing(Het)){
+    Het <- getHet(CountsMatrix, base = base)
   }
+  stopifnot(length(Het) == length(HetMacro))
+  lambda <- sum(Het) / log(N, base = base)
 
-  nI_S <- sum(HetMacro) - lambda*HS
+  nI_S <- sum(HetMacro) - lambdaMod*lambda*HS
 
   nI_S
 
